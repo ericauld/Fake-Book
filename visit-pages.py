@@ -40,6 +40,8 @@ def main():
                     continue
                 
                 if __debug__:
+                    print(set(song_info.keys()))
+                    print(ATTRIBUTES_IN_OUTPUT)
                     if not (ATTRIBUTES_IN_OUTPUT == set(song_info.keys())):
                         print("Note the scrape method returned a dictionary with different outputs than the ATTRIBUTES_IN_OUTPUT variable. The ATTRIBUTES IN OUTPUT was \n{}\nwhile the scrape method returned a dictionary with keys\n{}".format(ATTRIBUTES_IN_OUTPUT, set(song_info.keys())))
                 
