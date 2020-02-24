@@ -27,25 +27,35 @@ def main():
                 my_writer.writeheader()
 
             for url in links_file:
-
+                # Remove newline
+                if url:
+                    url = url[:-1]
                 sleep(randint(1,4))
 
                 # song_info is a dict
                 song_info = scrape(url)
-
+                n_pages_visited += 1
+                
                 if not song_info:
-                    # If song_info comes back empty, the scrape method should print out a message saying why it was left empty
+                    # If song_info comes back empty, the scrape method 
+                    # should print out a message saying why it was left empty
                     continue
                 
                 if __debug__:
                     if not (set(ATTRIBUTES_IN_OUTPUT) == set(song_info.keys())):
-                        print("Note the scrape method returned a dictionary with different outputs than the ATTRIBUTES_IN_OUTPUT variable. The ATTRIBUTES IN OUTPUT was \n{}\nwhile the scrape method returned a dictionary with keys\n{}".format(ATTRIBUTES_IN_OUTPUT, set(song_info.keys())))
+                        print(
+                                '''
+                                Note the scrape method returned a dictionary with 
+                                different outputs than the ATTRIBUTES_IN_OUTPUT 
+                                variable. The ATTRIBUTES IN OUTPUT was \n{}\n
+                                while the scrape method returned a dictionary with keys\n{}
+                                '''.format(ATTRIBUTES_IN_OUTPUT, set(song_info.keys())))
+                               ) 
                 
                 my_writer.writerow(song_info)
 
-                print("Wrote",song_info['Song Name'],"to output file.")
+                print("Wrote",song_info['Song Version Name'],"to output file.")
                 
-                n_pages_visited += 1
                 if (n_pages_visited >= MAX_N_PAGES):
                     break
 
@@ -83,9 +93,10 @@ def scrape(url: str) -> dict:
 
     song_name, artist_name = parse_title_element(title_element)
 
-    output_list.append(("Song Name", song_name))
+    output_list.append(("Song Version Name", song_name))
     output_list.append(("Artist Name", artist_name))
 
+    chords = set(chords)
     chords = ",".join(chords)
     chords = ("Chords", chords)
     output_list.append(("Chords", chords))
