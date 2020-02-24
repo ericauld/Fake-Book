@@ -88,7 +88,7 @@ def scrape(url: str) -> dict:
 
     chords = ",".join(chords)
     chords = ("Chords", chords)
-    output_list.append("Chords", chords)
+    output_list.append(("Chords", chords))
 
     return dict(output_list)
 
