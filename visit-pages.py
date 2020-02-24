@@ -4,70 +4,93 @@ import csv
 import string
 from time import sleep
 from random import randint
+import csv
 
 def main():
+
+    MAX_N_PAGES = 15
+    ATTRIBUTES_IN_OUTPUT = ['Song Version Name', 'Artist Name', 'Song Key', 'Chords', 'Key Is Guessed']
+    LINKS_DIRECTORY = "Songbook/Links"
 
     alpha = string.ascii_lowercase    
     for ch in alpha:
         # Output file is in append mode
-        with open('{}_links.txt'.format(ch)) as links_file, open('chords.csv', 'a', newline='') as output_file:
+        with open(LINKS_DIRECTORY + '/{}_links.txt'.format(ch)) as links_file, open('chords.csv', 'a', newline='') as output_file:
+
+            n_pages_visited = 0
             
-            # Change to dict writer
-            my_writer = csv.writer(output_file, delimiter=',', quotechar='"')
+            # DictWriter will leave a field empty if an entry is missing one of the keys
+            my_writer = csv.DictWriter(output_file, ATTRIBUTES_IN_OUTPUT)
 
+            # tell() should return zero if and only if the file was just created
             if output_file.tell() == 0:
-                my_writer.writerow(['Song Name','Artist','Key','Chords','Top','Key Guessed','Release Time'])
+                my_writer.writeheader()
 
-            # Limit to 5 for test
-            i = 0
             for url in links_file:
-                # song_info is a dict with keys like 'Song Name', 'Artist Name', 'Chords', etc.
-                # Put appropriate sleeps here
-                
+
                 sleep(randint(1,4))
 
+                # song_info is a dict
                 song_info = scrape(url)
 
-                # Edit here to set the song's harmonic key properly
-                '''
-                my_writer will take the dictionary song_info as argument, and, because it's a dictWriter,
-                will put things in the right place
-                '''
-                my_writer.writerow([
-                    song_info['Song Name'],
-                    song_info['Artist Name'],
-                    'A',
-                    song_info['Chords'],
-                    'True',
-                    'True'
-                ])
+                if not song_info:
+                    # If song_info comes back empty, the scrape method should print out a message saying why it was left empty
+                    continue
                 
-                #Limit to 5 for test
-                i+=1
-                if i >= 5:
+                if __debug__:
+                    if not (ATTRIBUTES_IN_OUTPUT == set(song_info.keys())):
+                        print("Note the scrape method returned a dictionary with different outputs than the ATTRIBUTES_IN_OUTPUT variable. The ATTRIBUTES IN OUTPUT was \n{}\nwhile the scrape method returned a dictionary with keys\n{}".format(ATTRIBUTES_IN_OUTPUT, set(song_info.keys())))
+                
+                my_writer.writerow(song_info)
+
+                print("Wrote",song_info['Song Name'],"to output file.")
+                
+                n_pages_visited += 1
+                if (n_pages_visited >= MAX_N_PAGES):
                     break
 
-        #break after 1 for test
-        break
+        if (n_pages_visited >=  MAX_N_PAGES):
+                break
             
-def scrape(url):
+def scrape(url, input_dict):
     response = get(url)
     html_soup = BeautifulSoup(response.text, 'lxml')
     chord_elements = html_soup.find_all('span', class_='gt-chord')
     title_element = html_soup.find('h1', class_='gt-hero__title')
 
-    chords = set()
+    output_list = []
+
+    if not chord_elements:
+        if __debug__:
+            print("Scraping website {} did not find any chords.".format(url))
+        return None            
+
+    chords = []
     for chord_element in chord_elements:
-        chords.add(chord_element.text)
-    chords = ','.join(chords)
+        chords.append(chord_element.text)
+
+    # If the first chord is not the same as the last chord, we aren't
+    # confident enough about guessing the key to add this song to the database
+    if (chords[0] != chords[-1]):
+        if __debug__:
+            print("No confident guess for key of song at {}".format(url))
+        return None
+    else: 
+        song_key = chords[0]
+
+    output_list.append(("Song Key", song_key))
+    output_list.append(("Key Is Guessed", True))
 
     song_name, artist_name = parse_title_element(title_element)
 
-    return {
-        'Song Name': song_name,
-        'Artist Name': artist_name,
-        'Chords': chords
-    }
+    output_list.append("Song Name", song_name)
+    output_list.append("Artist Name", artist_name)
+
+    chords = ",".join(chords)
+    chords = ("Chords", chords)
+    output_list.append("Chords", chords)
+
+    return dict(output_list)
 
 def parse_title_element(title_element):
     title_info_list = title_element.text.split()
