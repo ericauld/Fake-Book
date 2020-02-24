@@ -52,7 +52,7 @@ def main():
         if (n_pages_visited >=  MAX_N_PAGES):
                 break
             
-def scrape(url):
+def scrape(url: str) -> dict:
     response = get(url)
     html_soup = BeautifulSoup(response.text, 'lxml')
     chord_elements = html_soup.find_all('span', class_='gt-chord')

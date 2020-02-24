@@ -32,16 +32,3 @@ for ch in alpha:
     n_pages_visited += 1
     if (n_pages_visited >= MAX_N_PAGES):
         break
-
-# print(url_list)
-
-#print(url.format('a'))
-
-#response = get(url)
-
-#html_soup = BeautifulSoup(response.text, 'lxml')
-
-#chord_elements = html_soup.find_all('span', class_='gt-chord')
-#title_element = html_soup.find('h1', class_='gt-hero__title')
-
-
