@@ -83,8 +83,8 @@ def scrape(url: str) -> dict:
 
     song_name, artist_name = parse_title_element(title_element)
 
-    output_list.append("Song Name", song_name)
-    output_list.append("Artist Name", artist_name)
+    output_list.append(("Song Name", song_name))
+    output_list.append(("Artist Name", artist_name))
 
     chords = ",".join(chords)
     chords = ("Chords", chords)
