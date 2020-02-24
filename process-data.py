@@ -3,7 +3,7 @@ import psycopg2
 
 def main():
 
-    with open('key-file.txt') as key_file:
+    with open('~/Songbook/key-file.txt') as key_file:
         input_list = key_file.readlines()
 
     password = input_list[0]

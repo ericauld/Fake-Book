@@ -8,7 +8,7 @@ from random import randint
 MAX_N_PAGES = 26
 
 url = 'https://www.guitaretab.com/{}_top.html'
-LINKS_OUTPUT_DIR = "Songbook/Links"
+LINKS_OUTPUT_DIR = "~/Songbook/Links"
 
 alpha = string.ascii_lowercase
 

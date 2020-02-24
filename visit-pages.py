@@ -10,7 +10,7 @@ def main():
 
     MAX_N_PAGES = 15
     ATTRIBUTES_IN_OUTPUT = ['Song Version Name', 'Artist Name', 'Song Key', 'Chords', 'Key Is Guessed']
-    LINKS_DIRECTORY = "Songbook/Links"
+    LINKS_DIRECTORY = "~/Songbook/Links"
 
     alpha = string.ascii_lowercase    
     for ch in alpha:
@@ -52,7 +52,7 @@ def main():
         if (n_pages_visited >=  MAX_N_PAGES):
                 break
             
-def scrape(url, input_dict):
+def scrape(url):
     response = get(url)
     html_soup = BeautifulSoup(response.text, 'lxml')
     chord_elements = html_soup.find_all('span', class_='gt-chord')
