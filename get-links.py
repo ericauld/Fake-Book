@@ -37,5 +37,5 @@ def main():
         if (n_pages_visited >= MAX_N_PAGES):
             break
 
-if __name__='__main__':
+if __name__=='__main__':
     main()
