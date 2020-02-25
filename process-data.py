@@ -1,7 +1,7 @@
 import csv
 import psycopg2
 
-def main(MAX_N_TO_PROCESS):
+def main(MAX_N_TO_PROCESS = None):
 
     if MAX_N_TO_PROCESS is None:
         print("You did not choose a maximum number of entries to process. It has been automatically set to 500.")

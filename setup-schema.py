@@ -152,5 +152,12 @@ def main():
     except:
         print("I am unable to connect to the database")
 
+# Make function to input a mode into the 
+def mode_input(mode_name: str, mode_notes: list) -> None:
+    '''
+    INSERT INTO Modes(ModeName)
+        
+    '''
+
 if __name__=='__main__':
     main()

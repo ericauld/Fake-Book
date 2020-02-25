@@ -1,6 +1,8 @@
 # Songbook
 
-There are twelve distinct notes on the piano, but most songs don't use them all. Just as each painting includes some colors and excludes others, each song has its own harmonic palette. My project makes use of relational databases to analyze songs which use a similar palette.
+There are twelve distinct notes on the piano, but most songs don't use them all. Just as each painting includes some colors and excludes others, each song has its own harmonic palette. My project makes use of relational databases to analyze songs by their harmonic palettes. 
+
+In music theory, a __mode__ is a subset of the twelve available notes which is popular enough to receive its own name. (For example, the Mixolydian mode consists of {1, 2, 3, 4, 5, 6, b7}.)
 
 ## Data Pipeline
 
@@ -11,6 +13,10 @@ There are a lot of webpages which list which chords appear in which songs, becau
 ![d](https://halcyoona.files.wordpress.com/2018/07/ec2-logo.png)
 
 ![d](https://blog.desdelinux.net/wp-content/uploads/2018/10/postgresql.jpeg)
+
+## Similarity 
+
+The 
 
 ## Use
 
