@@ -1,9 +1,13 @@
 import csv
 import psycopg2
 
-def main():
+def main(MAX_N_TO_PROCESS):
 
-    with open('~/Songbook/key-file.txt') as key_file:
+    if MAX_N_TO_PROCESS is None:
+        print("You did not choose a maximum number of entries to process. It has been automatically set to 500.")
+        MAX_N_TO_PROCESS = 500
+
+    with open('/home/Ubuntu/Songbook/key-file.txt') as key_file:
         input_list = key_file.readlines()
 
     password = input_list[0]
@@ -199,15 +203,3 @@ def process_chords(chords, song_key):
 
 if __name__=='__main__':
     main()
-
-# if __name__=='__main__':
-#     print(process_chords({'Am', 'Bbdim', 'C', 'Db'}, 'Db'))
-# 
-
-# try:
-#     conn = psycopg2.connect("dbname='postgres' user='postgres' host='localhost' password='postgres'")
-#     conn.set_isolation_level(0)
-#     cur = conn.cursor()
-#     cur.execute(setup_schema)
-# except:
-#     throw Exception("Problem connecting to the SQL database")

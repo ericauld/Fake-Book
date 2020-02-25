@@ -11,3 +11,7 @@ There are a lot of webpages which list which chords appear in which songs, becau
 ![d](https://halcyoona.files.wordpress.com/2018/07/ec2-logo.png)
 
 ![d](https://blog.desdelinux.net/wp-content/uploads/2018/10/postgresql.jpeg)
+
+## Use
+
+If you want to insert your own modes, you can use `setup-schema.mode_input`. You can then search for songs which the database finds to be closest to that mode. One can find a number of examples on ![d](https://en.wikipedia.org/wiki/Mode_(music)#Other_types). 
