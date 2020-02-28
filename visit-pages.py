@@ -49,7 +49,7 @@ def main():
                                 different outputs than the ATTRIBUTES_IN_OUTPUT 
                                 variable. The ATTRIBUTES IN OUTPUT was \n{}\n
                                 while the scrape method returned a dictionary with keys\n{}
-                                '''.format(ATTRIBUTES_IN_OUTPUT, set(song_info.keys())))
+                                '''.format(ATTRIBUTES_IN_OUTPUT, set(song_info.keys()))
                                ) 
                 
                 my_writer.writerow(song_info)
