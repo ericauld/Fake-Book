@@ -5,8 +5,10 @@ import string
 from time import sleep
 from random import randint
 
-def main():
-    MAX_N_PAGES = 26
+def main(MAX_N_PAGES = None):
+    if MAX_N_PAGES is None:
+        print("You did not specify a max number of pages to visit to get links. Max has been automatically set to 26.")
+        MAX_N_PAGES = 26
 
     url = 'https://www.guitaretab.com/{}_top.html'
     LINKS_OUTPUT_DIR = "/home/ubuntu/Songbook/Links"
