@@ -35,7 +35,6 @@ def main():
 
     CREATE TABLE AbsoluteNotes(
         AbsoluteNoteID SMALLINT,
-        AbsoluteNoteName CHAR(50) UNIQUE NOT NULL,
         PRIMARY KEY (AbsoluteNoteID)
     );
     
@@ -143,7 +142,7 @@ def main():
         (11),
         (12);    
 
-    INSERT INTO AbsoluteNotes(AbsoluteNoteName, AbsoluteNoteID)
+    INSERT INTO AbsoluteNoteNames(AbsoluteNoteName, AbsoluteNoteID)
     VALUES
         ('C', 1),
         ('C#', 2),
