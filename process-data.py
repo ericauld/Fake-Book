@@ -4,8 +4,7 @@ from pathlib import Path
 
 def main(MAX_N_TO_PROCESS = None):
 
-    # project_folder = Path("/home/ubuntu/Songbook")
-    project_folder = Path("/Users/ericauld/Desktop/Songbook")
+    project_folder = Path("/home/ubuntu/Songbook")
     if not project_folder.exists():
         raise Exception("The 'Songbook' directory wasn't where the process-data.py script expected it to be. It can be modified by changing the constructor of project_folder (a pathlib.Path object).")
 
@@ -14,6 +13,8 @@ def main(MAX_N_TO_PROCESS = None):
         raise Exception("The file 'chords.csv' was not there to be processed by process-data.py. It should be inside the Songbook directory.")
 
     _key_file = project_folder / "key-file.txt"
+    if not _key_file.exists():
+        raise Exception("The process-data module was unable to find the key-file.txt file to log into the postgres database.")
     
     if MAX_N_TO_PROCESS is None:
         print("You did not choose a maximum number of entries to process. It has been automatically set to 500.")
@@ -26,12 +27,11 @@ def main(MAX_N_TO_PROCESS = None):
 
     login_info = "dbname='postgres' user='postgres' host='localhost' password='{}'".format(password)
 
-    # try:
-    #     conn = psycopg2.connect(login_info)
-    #     #Look into this more later..."Read committed" and so forth    
-    #     conn.set_isolation_level(0)
-    # except:
-    #     raise Exception("Problem connecting to the SQL database")
+    try:
+        conn = psycopg2.connect(login_info)
+        conn.set_isolation_level(0)
+    except:
+        raise Exception("Problem connecting to the SQL database")
 
     with chords_file.open() as input_file:
         reader = csv.DictReader(input_file)
@@ -46,10 +46,8 @@ def main(MAX_N_TO_PROCESS = None):
                 print("Something went wrong while parsing the chords of " + row['Song Version Name'] + ".")
                 continue
 
-            print(processed_chords)
-
             # id_of_artist = input_artist(conn, row['Artist'])
-            # id_of_key = note_to_number(row['Key'])
+            id_of_key = note_to_number(row['Key'])
             # id_of_song_version, insert_successful = input_song_version(
             #     conn, 
             #     row['Song Name'], 
@@ -61,62 +59,61 @@ def main(MAX_N_TO_PROCESS = None):
             #     print("Song version '", row['Song Name'], "' was already in the database.")
             #     continue
             
-            # processed_chord_ids = input_chords(conn, processed_chords)
+            processed_chord_ids = input_chords(conn, processed_chords)
             # input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
 
 
-# # Processed_chords is a list of string doubles (root_degree, chord_type)
-# def input_chords(conn, processed_chords):
-#     cur = conn.cursor()
-#     chord_ids = []
-#     for chord in processed_chords:
-# # What I want to do here is to take all these doubles and turn them into ChordIDs, adding things if necessary. First I need to get the chordtypeID and throw an exception if it's not already there
-#         root_degree = chord[0]
-#         chord_type = chord[1]
-#         SQL = '''SELECT ChordTypeID
-#                 FROM ChordTypes
-#                 WHERE ChordTypeName = %s
-#         ''' 
-#         cur.execute(
-#             SQL,
-#             chord_type
-#         )
-#         fetch = cur.fetchone()
-#         if not fetch:
-#             raise Exception("The chord type", chord_type, "was not found in the ChordTypes table.")
-#         chord_type_id = fetch[0]
+# Processed_chords is a list of string doubles (root_degree, chord_type). 
+# It returns the chords as a list of integers, their chordIDs in the databse.
+def input_chords(conn, processed_chords: list(tuple(str)): -> list(int)
+    cur = conn.cursor()
+    chord_ids = []
+    for chord in processed_chords:
+# What I want to do here is to take all these doubles and turn them into ChordIDs, adding things if necessary. First I need to get the chordtypeID and throw an exception if it's not already there
+        root_degree = chord[0]
+        chord_type = chord[1]
+        SQL = '''SELECT ChordTypeID
+                FROM ChordTypes
+                WHERE ChordTypeName = %s
+        ''' 
+        cur.execute(
+            SQL,
+            chord_type
+        )
+        fetch = cur.fetchone()
+        if not fetch:
+            raise Exception("The chord type", chord_type, "was not found in the ChordTypes table.")
+        chord_type_id = fetch[0]
 
-
-
-#         SQL = '''INSERT INTO Chords(ChordName)
-#                 SELECT %s
-#                     WHERE NOT EXISTS (
-#                         SELECT 1 FROM Chords
-#                         WHERE ChordName = %s
-#                     ) 
-#                 RETURNING ChordID
-#         '''
-#         cur.execute(
-#             SQL,
-#             (chord,chord)
-#         )
-#         fetch = cur.fetchone()
-#         if fetch:
-#             chord_ids.append(fetch[0])
-#         else:
-#             SQL2 = '''SELECT ChordID 
-#                     FROM Chords
-#                     WHERE ChordName=%s
-#             '''
-#             cur.execute(
-#                 SQL2,
-#                 (chord,)
-#             )
-#             fetch2 = cur.fetchone()
-#             if not fetch2:
-#                 raise Exception("The cursor was empty when it shouldn't have been.")
-#             chord_ids.append(fetch2[0])
-#     return chord_ids
+        SQL = '''INSERT INTO Chords(ChordName)
+                SELECT %s
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM Chords
+                        WHERE ChordName = %s
+                    ) 
+                RETURNING ChordID
+        '''
+        cur.execute(
+            SQL,
+            (chord,chord)
+        )
+        fetch = cur.fetchone()
+        if fetch:
+            chord_ids.append(fetch[0])
+        else:
+            SQL2 = '''SELECT ChordID 
+                    FROM Chords
+                    WHERE ChordName=%s
+            '''
+            cur.execute(
+                SQL2,
+                (chord,)
+            )
+            fetch2 = cur.fetchone()
+            if not fetch2:
+                raise Exception("The cursor was empty when it shouldn't have been.")
+            chord_ids.append(fetch2[0])
+    return chord_ids
 
 
 def process_chords(chords, song_key):
