@@ -7,11 +7,11 @@ def main(MAX_N_TO_PROCESS = None):
     # project_folder = Path("/home/ubuntu/Songbook")
     project_folder = Path("/Users/ericauld/Desktop/Songbook")
     if not project_folder.exists():
-        raise Exception("The 'Songbook' folder wasn't where the process-data.py script expected it to be")
+        raise Exception("The 'Songbook' directory wasn't where the process-data.py script expected it to be. It can be modified by changing the constructor of project_folder (a pathlib.Path object).")
 
     chords_file = project_folder / "chords.csv"
     if not chords_file.exists():
-        raise Exception("The file 'chords.csv' was not there to be processed by process-data.py. There may be a problem with how visit-pages.py ran.")
+        raise Exception("The file 'chords.csv' was not there to be processed by process-data.py. It should be inside the Songbook directory.")
 
     _key_file = project_folder / "key-file.txt"
     
@@ -19,19 +19,19 @@ def main(MAX_N_TO_PROCESS = None):
         print("You did not choose a maximum number of entries to process. It has been automatically set to 500.")
         MAX_N_TO_PROCESS = 500
 
-#     with _key_file.open() as key_file:
-#         input_list = key_file.readlines()
+    with _key_file.open() as key_file:
+        input_list = key_file.readlines()
 
-#     password = input_list[0]
+    password = input_list[0]
 
-#     login_info = "dbname='postgres' user='postgres' host='localhost' password='{}'".format(password)
+    login_info = "dbname='postgres' user='postgres' host='localhost' password='{}'".format(password)
 
-#     try:
-#         conn = psycopg2.connect(login_info)
-#         #Look into this more later..."Read committed" and so forth    
-#         conn.set_isolation_level(0)
-#     except:
-#         raise Exception("Problem connecting to the SQL database")
+    # try:
+    #     conn = psycopg2.connect(login_info)
+    #     #Look into this more later..."Read committed" and so forth    
+    #     conn.set_isolation_level(0)
+    # except:
+    #     raise Exception("Problem connecting to the SQL database")
 
     with chords_file.open() as input_file:
         reader = csv.DictReader(input_file)
@@ -45,6 +45,8 @@ def main(MAX_N_TO_PROCESS = None):
             except:
                 print("Something went wrong while parsing the chords of " + row['Song Version Name'] + ".")
                 continue
+
+            print(processed_chords)
 
             # id_of_artist = input_artist(conn, row['Artist'])
             # id_of_key = note_to_number(row['Key'])
@@ -62,44 +64,30 @@ def main(MAX_N_TO_PROCESS = None):
             # processed_chord_ids = input_chords(conn, processed_chords)
             # input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
 
-def process_chords(chords, song_key):
 
-    number_to_degree = ['I', 'bII', 'II', 'bIII', 'III', 'IV', 'IV#', 'V', 'bVI', 'VI', 'bVII', 'VII']
-
-    res = []
-    song_key_numeric = note_to_number(song_key)
-    for chord in chords:
-
-        # If our chord comes with a sharp or a flat in the name
-        if len(chord)>=2 and (chord[1] == '#' or chord[1] == 'b'):
-            chord_absolute_root = chord[0:2]
-            chord_type = chord[2:]
-        else:
-            chord_absolute_root = chord[0]
-            chord_type = chord[1:]
-        root_degree_numeric = (note_to_number(chord_absolute_root) - song_key_numeric) % 12
-        root_degree = number_to_degree[root_degree_numeric]
-        res.append((root_degree, chord_type))
-    return res
-
-# def input_song_version_chords(conn, id_of_song_version, processed_chord_ids):
-#     cur = conn.cursor()
-#     # Want to find a way to do this all in one shot, but it's 
-#     # hard to pass Psycopg2 a variable number of arguments
-#     for chord_id in processed_chord_ids:        
-#         SQL = '''INSERT INTO SongVersionChords(SongVersionID, ChordID)
-#                 VALUES
-#                     (%s, %s)
-#         '''
-#         cur.execute(
-#             SQL,
-#             (id_of_song_version, chord_id)
-#         )
-
+# # Processed_chords is a list of string doubles (root_degree, chord_type)
 # def input_chords(conn, processed_chords):
 #     cur = conn.cursor()
 #     chord_ids = []
 #     for chord in processed_chords:
+# # What I want to do here is to take all these doubles and turn them into ChordIDs, adding things if necessary. First I need to get the chordtypeID and throw an exception if it's not already there
+#         root_degree = chord[0]
+#         chord_type = chord[1]
+#         SQL = '''SELECT ChordTypeID
+#                 FROM ChordTypes
+#                 WHERE ChordTypeName = %s
+#         ''' 
+#         cur.execute(
+#             SQL,
+#             chord_type
+#         )
+#         fetch = cur.fetchone()
+#         if not fetch:
+#             raise Exception("The chord type", chord_type, "was not found in the ChordTypes table.")
+#         chord_type_id = fetch[0]
+
+
+
 #         SQL = '''INSERT INTO Chords(ChordName)
 #                 SELECT %s
 #                     WHERE NOT EXISTS (
@@ -129,6 +117,37 @@ def process_chords(chords, song_key):
 #                 raise Exception("The cursor was empty when it shouldn't have been.")
 #             chord_ids.append(fetch2[0])
 #     return chord_ids
+
+
+def process_chords(chords, song_key):
+    res = []
+    song_key_numeric = note_to_number(song_key)
+    for chord in chords:
+
+        # If our chord comes with a sharp or a flat in the name
+        if len(chord)>=2 and (chord[1] == '#' or chord[1] == 'b'):
+            chord_absolute_root = chord[0:2]
+            chord_type = chord[2:]
+        else:
+            chord_absolute_root = chord[0]
+            chord_type = chord[1:]
+        root_degree_numeric = (note_to_number(chord_absolute_root) - song_key_numeric) % 12
+        res.append((root_degree_numeric, chord_type))
+    return res
+
+# def input_song_version_chords(conn, id_of_song_version, processed_chord_ids):
+#     cur = conn.cursor()
+#     # Want to find a way to do this all in one shot, but it's 
+#     # hard to pass Psycopg2 a variable number of arguments
+#     for chord_id in processed_chord_ids:        
+#         SQL = '''INSERT INTO SongVersionChords(SongVersionID, ChordID)
+#                 VALUES
+#                     (%s, %s)
+#         '''
+#         cur.execute(
+#             SQL,
+#             (id_of_song_version, chord_id)
+#         )
 
 # # Returns ArtistID of new row (or ArtistID of row which already existed)
 # def input_artist(conn, artist_name):
@@ -186,7 +205,6 @@ def process_chords(chords, song_key):
 # # We encode each absolute note as a number. This is also its AbsoluteNoteID in the Postgres database    
 def note_to_number(note_name):
     note_to_number_dict = {
-        # Maybe later put lower case or other aliases to make more robust
         'C':1,
         'C#':2,
         'Db':2,
