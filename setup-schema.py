@@ -164,6 +164,21 @@ def main():
         ('Bb', 10),
         ('B', 11),
         ('Cb', 11);
+
+    INSERT INTO NoteDegrees(NoteDegreeID, NoteDegreeName)
+    VALUES
+        (0, 'I'),
+        (1, 'bII'),
+        (2, 'II'),
+        (3, 'bIII'),
+        (4, 'III'),
+        (5, 'IV'),
+        (6, '#IV'),
+        (7, 'V'),
+        (8, 'bVI'),
+        (9, 'VI'),
+        (10, 'bVII'),
+        (11, 'VII');
     
     INSERT INTO ChordTypes(ChordTypeName, ChordTypeShape)
     VALUES
