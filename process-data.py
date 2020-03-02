@@ -47,6 +47,11 @@ def main(MAX_N_TO_PROCESS = None):
                 print("Something went wrong while parsing the chords of " + row['Song Version Name'] + ".")
                 continue
 
+            try:
+                processed_chord_ids = input_chords(conn, processed_chords)
+            except:
+                print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
+                continue 
             # id_of_artist = input_artist(conn, row['Artist'])
             id_of_key = note_to_number(row['Song Key'])
             # id_of_song_version, insert_successful = input_song_version(
@@ -59,9 +64,7 @@ def main(MAX_N_TO_PROCESS = None):
             # if not insert_successful:
             #     print("Song version '", row['Song Name'], "' was already in the database.")
             #     continue
-            
-            processed_chord_ids = input_chords(conn, processed_chords)
-            # input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
+           # input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
 
 
 # Processed_chords is a list of string doubles (root_degree, chord_type). 
@@ -77,22 +80,16 @@ def input_chords(conn, processed_chords: List[Tuple[str]]) -> List[int]:
                 FROM ChordTypes
                 WHERE ChordTypeName = %s
         ''' 
-        if not chord_type:
-            print(chord_type)
-            print("Encountered empty chord type")
         cur.execute(
             SQL,
             (chord_type,)
         )
         fetch = cur.fetchone()
-        print(fetch)
-        return
-#        if not fetch:
-#            print("The chord type", chord_type, "was not found in the ChordTypes table.")
-#            raise Exception()
-#        chord_type_id = fetch[0]
-#        print(chord_type_id)
-#
+        if not fetch:
+            print("The chord type", chord_type, "was not found in the ChordTypes table.")
+            raise Exception()
+        chord_type_id = fetch[0]
+
 #        SQL = '''INSERT INTO Chords(ChordName)
 #                SELECT %s
 #                    WHERE NOT EXISTS (
