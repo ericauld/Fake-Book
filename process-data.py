@@ -13,11 +13,13 @@ def main(MAX_N_TO_PROCESS = None):
     if not chords_file.exists():
         raise Exception("The file 'chords.csv' was not there to be processed by process-data.py. There may be a problem with how visit-pages.py ran.")
 
+    _key_file = project_folder / "key-file.txt"
+    
     if MAX_N_TO_PROCESS is None:
         print("You did not choose a maximum number of entries to process. It has been automatically set to 500.")
         MAX_N_TO_PROCESS = 500
 
-#     with open('/home/Ubuntu/Songbook/key-file.txt') as key_file:
+#     with _key_file.open() as key_file:
 #         input_list = key_file.readlines()
 
 #     password = input_list[0]
@@ -31,34 +33,54 @@ def main(MAX_N_TO_PROCESS = None):
 #     except:
 #         raise Exception("Problem connecting to the SQL database")
 
-    with open('/home/ubuntu/Songbook/chords.csv', newline = '') as input_file:
+    with chords_file.open() as input_file:
         reader = csv.DictReader(input_file)
         for row in reader:
-            # There may be other reasons to skip lines besides this one
             if not row['Chords']:
+                print(row['Song Name'], "did not have any chords in the chords file.")
                 continue
             chords_list = row['Chords'].split(',')
             try:
-                processed_chords = process_chords(chords_list, row['Key'])
+                processed_chords = process_chords(chords_list, row['Song Key'])
             except:
-                print("Something went wrong while parsing the chords of",row['Song Name'],".")
+                print("Something went wrong while parsing the chords of " + row['Song Version Name'] + ".")
                 continue
-            id_of_artist = input_artist(conn, row['Artist'])
-            id_of_key = note_to_number(row['Key'])
-            id_of_song_version, insert_successful = input_song_version(
-                conn, 
-                row['Song Name'], 
-                id_of_artist, 
-                id_of_key
-            )
 
-            if not insert_successful:
-                print("Song version '", row['Song Name'], "' was already in the database.")
-                continue
+            # id_of_artist = input_artist(conn, row['Artist'])
+            # id_of_key = note_to_number(row['Key'])
+            # id_of_song_version, insert_successful = input_song_version(
+            #     conn, 
+            #     row['Song Name'], 
+            #     id_of_artist, 
+            #     id_of_key
+            # )
+
+            # if not insert_successful:
+            #     print("Song version '", row['Song Name'], "' was already in the database.")
+            #     continue
             
-            processed_chord_ids = input_chords(conn, processed_chords)
-            input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
-            
+            # processed_chord_ids = input_chords(conn, processed_chords)
+            # input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
+
+def process_chords(chords, song_key):
+
+    number_to_degree = ['I', 'bII', 'II', 'bIII', 'III', 'IV', 'IV#', 'V', 'bVI', 'VI', 'bVII', 'VII']
+
+    res = []
+    song_key_numeric = note_to_number(song_key)
+    for chord in chords:
+
+        # If our chord comes with a sharp or a flat in the name
+        if len(chord)>=2 and (chord[1] == '#' or chord[1] == 'b'):
+            chord_absolute_root = chord[0:2]
+            chord_type = chord[2:]
+        else:
+            chord_absolute_root = chord[0]
+            chord_type = chord[1:]
+        root_degree_numeric = (note_to_number(chord_absolute_root) - song_key_numeric) % 12
+        root_degree = number_to_degree[root_degree_numeric]
+        res.append((root_degree, chord_type))
+    return res
 
 # def input_song_version_chords(conn, id_of_song_version, processed_chord_ids):
 #     cur = conn.cursor()
@@ -162,50 +184,29 @@ def main(MAX_N_TO_PROCESS = None):
 #     return fetch[0], True
 
 # # We encode each absolute note as a number. This is also its AbsoluteNoteID in the Postgres database    
-# def note_to_number(note_name):
-#     note_to_number_dict = {
-#         # Maybe later put lower case or other aliases to make more robust
-#         'C':1,
-#         'C#':2,
-#         'Db':2,
-#         'D':3,
-#         'D#':4,
-#         'Eb':4,
-#         'E':5,
-#         'F':6,
-#         'F#':7,
-#         'Gb':7,
-#         'G':8,
-#         'G#':9,
-#         'Ab':9,
-#         'A':10,
-#         'A#':11,
-#         'Bb':11,
-#         'B':12,
-#         'Cb':12
-#     }
-#     return note_to_number_dict[note_name]
-
-# def process_chords(chords, song_key):
-
-#     number_to_degree = ['I', 'bII', 'II', 'bIII', 'III', 'IV', 'IV#', 'V', 'bVI', 'VI', 'bVII', 'VII']
-
-#     res = []
-#     song_key_numeric = note_to_number(song_key)
-#     for chord in chords:
-
-#         # If our chord comes with a sharp or a flat in the name
-#         if len(chord)>=2 and (chord[1] == '#' or chord[1] == 'b'):
-#             chord_root = chord[0:2]
-#             output_chord_type = chord[2:]
-#         else:
-#             chord_root = chord[0]
-#             output_chord_type = chord[1:]
-#         output_root_numeric = (note_to_number(chord_root) - song_key_numeric) % 12
-#         output_root = number_to_degree[output_root_numeric]
-#         output_chord = output_root + output_chord_type
-#         res.append(output_chord)
-#     return res
+def note_to_number(note_name):
+    note_to_number_dict = {
+        # Maybe later put lower case or other aliases to make more robust
+        'C':1,
+        'C#':2,
+        'Db':2,
+        'D':3,
+        'D#':4,
+        'Eb':4,
+        'E':5,
+        'F':6,
+        'F#':7,
+        'Gb':7,
+        'G':8,
+        'G#':9,
+        'Ab':9,
+        'A':10,
+        'A#':11,
+        'Bb':11,
+        'B':12,
+        'Cb':12
+    }
+    return note_to_number_dict[note_name]
 
 if __name__=='__main__':
     main()

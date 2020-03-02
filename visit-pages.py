@@ -50,11 +50,7 @@ def main():
                                 variable. The ATTRIBUTES IN OUTPUT was \n{}\n
                                 while the scrape method returned a dictionary with keys\n{}
                                 '''.format(ATTRIBUTES_IN_OUTPUT, set(song_info.keys()))
-<<<<<<< HEAD
-                            ) 
-=======
                                ) 
->>>>>>> WrapIntoOne
                 
                 my_writer.writerow(song_info)
 
