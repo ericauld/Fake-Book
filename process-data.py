@@ -7,15 +7,21 @@ def main(MAX_N_TO_PROCESS = None):
 
     project_folder = Path("/home/ubuntu/Songbook")
     if not project_folder.exists():
-        raise Exception("The 'Songbook' directory wasn't where the process-data.py script expected it to be. It can be modified by changing the constructor of project_folder (a pathlib.Path object).")
-
-    chords_file = project_folder / "chords.csv"
+        raise Exception('''
+        The 'Songbook' directory wasn't where the process-data.py script expected it to be.\
+        It can be modified by changing the constructor of project_folder (a pathlib.Path object).
+        ''')
+            chords_file = project_folder / "chords.csv"
     if not chords_file.exists():
-        raise Exception("The file 'chords.csv' was not there to be processed by process-data.py. It should be inside the Songbook directory.")
-
+        raise Exception('''
+        The file 'chords.csv' was not there to be processed by process-data.py.\
+        It should be inside the Songbook directory.
+        ''')
     _key_file = project_folder / "key-file.txt"
     if not _key_file.exists():
-        raise Exception("The process-data module was unable to find the key-file.txt file to log into the postgres database.")
+        raise Exception('''
+        The process-data module was unable to find the key-file.txt file to log into the postgres database.
+        ''')
     
     if MAX_N_TO_PROCESS is None:
         print("You did not choose a maximum number of entries to process. It has been automatically set to 500.")
