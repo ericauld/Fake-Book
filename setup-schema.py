@@ -183,8 +183,8 @@ def main():
     INSERT INTO ChordTypes(ChordTypeName, ChordTypeShape)
     VALUES
         ('', '0,4,3'),
-        ('m', '0,3,4');
-
+        ('m', '0,3,4'),
+        ('5', '0,7');
     
     """
 
