@@ -174,19 +174,18 @@ def main():
 
     # INSERT INTO Modes()
 
- #   try:
+try:
     conn = psycopg2.connect(login_info)
     conn.set_isolation_level(0)
     cur = conn.cursor()
     cur.execute(SQL)
-#    except:
-#    print("I am unable to connect to the database")
+except:
+    print("I am unable to connect to the database")
 
     # INSERT INTO ChordNoteDegrees()
 
     # INSERT INTO Modes()
 
-# Make function to input a mode into the 
 def mode_input(mode_name: str, mode_notes: list) -> None:
     pass
     # '''
