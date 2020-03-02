@@ -52,18 +52,18 @@ def main(MAX_N_TO_PROCESS = None):
             except:
                 print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
                 continue 
-            # id_of_artist = input_artist(conn, row['Artist'])
+            id_of_artist = input_artist(conn, row['Artist'])
             id_of_key = note_to_number(row['Song Key'])
-            # id_of_song_version, insert_successful = input_song_version(
-            #     conn, 
-            #     row['Song Name'], 
-            #     id_of_artist, 
-            #     id_of_key
-            # )
+            id_of_song_version, insert_successful = input_song_version(
+                conn, 
+                row['Song Name'], 
+                id_of_artist, 
+                id_of_key
+            )
 
-            # if not insert_successful:
-            #     print("Song version '", row['Song Name'], "' was already in the database.")
-            #     continue
+            if not insert_successful:
+                print("Song version '", row['Song Name'], "' was already in the database.")
+                continue
            # input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
 
 
@@ -151,58 +151,58 @@ def process_chords(chords, song_key):
 #             (id_of_song_version, chord_id)
 #         )
 
-# # Returns ArtistID of new row (or ArtistID of row which already existed)
-# def input_artist(conn, artist_name):
-#     cur = conn.cursor()
-#     SQL = '''INSERT INTO Artists(ArtistName)
-#             SELECT %s
-#                 WHERE NOT EXISTS (
-#                     SELECT 1 FROM Artists
-#                     WHERE ArtistName = %s
-#                 )
-#             RETURNING ArtistID;
-#     '''
-#     cur.execute(
-#         SQL,
-#         (artist_name, artist_name)
-#     )
-#     fetch = cur.fetchone()
-#     if fetch:
-#         id_of_new_row = fetch[0]
-#         return id_of_new_row
-#     else:
-#         SQL2 = '''SELECT ArtistID
-#                 FROM Artists
-#                 WHERE ArtistName = %s
-#         '''
-#         cur.execute(
-#             SQL2,
-#             (artist_name,)
-#         )
-#         fetch2 = cur.fetchone()
-#         if not fetch2:
-#             raise Exception("The cursor was empty when it shouldn't have been.")
-#         return fetch2[0]
+# Returns ArtistID of new row (or ArtistID of row which already existed)
+def input_artist(conn, artist_name):
+    cur = conn.cursor()
+    SQL = '''INSERT INTO Artists(ArtistName)
+            SELECT %s
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM Artists
+                    WHERE ArtistName = %s
+                )
+            RETURNING ArtistID;
+    '''
+    cur.execute(
+        SQL,
+        (artist_name, artist_name)
+    )
+    fetch = cur.fetchone()
+    if fetch:
+        id_of_new_row = fetch[0]
+        return id_of_new_row
+    else:
+        SQL2 = '''SELECT ArtistID
+                FROM Artists
+                WHERE ArtistName = %s
+        '''
+        cur.execute(
+            SQL2,
+            (artist_name,)
+        )
+        fetch2 = cur.fetchone()
+        if not fetch2:
+            raise Exception("The cursor was empty when it shouldn't have been.")
+        return fetch2[0]
 
-# # Returns ID_of_song, true if song was successfully input and ?,false if it was not (if it was already there)
-# def input_song_version(conn, song_version_name, id_of_artist, id_of_key):
-#     cur = conn.cursor()
-#     SQL = '''INSERT INTO SongVersions(SongVersionName, ArtistID, RootToneID)
-#             SELECT %s, %s, %s
-#                 WHERE NOT EXISTS(
-#                     SELECT 1 FROM SongVersions
-#                     WHERE SongVersionName = %s
-#                 )
-#             RETURNING SongVersionID;
-#     '''
-#     cur.execute(
-#         SQL,
-#         (song_version_name, id_of_artist, id_of_key, song_version_name)
-#     )
-#     fetch = cur.fetchone()
-#     if not fetch:
-#         return -1, False
-#     return fetch[0], True
+# Returns ID_of_song, true if song was successfully input and -1,false if it was not (if it was already there)
+def input_song_version(conn, song_version_name, id_of_artist, id_of_key):
+    cur = conn.cursor()
+    SQL = '''INSERT INTO SongVersions(SongVersionName, ArtistID, RootToneID)
+            SELECT %s, %s, %s
+                WHERE NOT EXISTS(
+                    SELECT 1 FROM SongVersions
+                    WHERE SongVersionName = %s
+                )
+            RETURNING SongVersionID;
+    '''
+    cur.execute(
+        SQL,
+        (song_version_name, id_of_artist, id_of_key, song_version_name)
+    )
+    fetch = cur.fetchone()
+    if not fetch:
+        return -1, False
+    return fetch[0], True
 
 # # We encode each absolute note as a number. This is also its AbsoluteNoteID in the Postgres database    
 def note_to_number(note_name):
