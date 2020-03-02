@@ -2,17 +2,18 @@
 #
 
 import psycopg2
+from pathlib import Path
 
 def main():
 
-    with open('/home/ubuntu/Songbook/key-file.txt') as key_file:
+    project_folder = Path("/home/ubuntu/Songbook")
+    _key_file = project_folder / "key-file.txt"
+
+    with _key_file.open() as key_file:
         input_list = key_file.readlines()
 
     password = input_list[0]
-    # remove newline from password
-    password = password[:-1]
     login_info = "dbname='postgres' user='postgres' host='localhost' password='{}'".format(password)
-    print(password)
 
     SQL = """
     CREATE TABLE TimePeriods (
@@ -164,7 +165,7 @@ def main():
         ('B', 11),
         ('Cb', 11);
     
-    INSERT INTO ChordTypes(ChordName, ChordShape)
+    INSERT INTO ChordTypes(ChordTypeName, ChordTypeShape)
     VALUES
         ('', '0,4,3'),
         ('m', '0,3,4');
