@@ -56,36 +56,51 @@ def main(MAX_N_TO_PROCESS = None):
                 print(row['Song Name'], "did not have any chords in the chords file.")
                 continue
             chords_list = row['Chords'].split(',')
+
             try:
                 chords_for_input = process_chords(conn, chords_list, row['Song Key'])
             except:
                 print("Something went wrong while parsing the chords of " + row['Song Version Name'] + ".")
                 continue
             
-            print(row['Song Name'], "chords:")
-            print(chords_for_input)
-            # fix this
-            # try:
-            #     processed_chord_ids = input_chords(conn, processed_chords)
-            # except:
-            #     print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
-            #     continue 
-            id_of_artist = input_artist(conn, row['Artist'])
+            try:
+                input_chords(conn, chords_for_input)
+            except:
+                print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
+                continue 
+            id_of_artist = input_artist(conn, row['Artist Name'])
             id_of_key = note_to_number(row['Song Key'])
             id_of_song_version, insert_successful = input_song_version(
                 conn, 
-                row['Song Name'], 
+                row['Song Version Name'], 
                 id_of_artist, 
                 id_of_key
             )
 
             if not insert_successful:
-                print("Song version '", row['Song Name'], "' was already in the database.")
+                print("Song version '", row['Song Version Name'], "' was already in the database.")
                 continue
-           # input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
+            
+            input_song_version_chords(conn, id_of_song_version, chords_for_input)
+
+def input_song_version_chords(conn, id_of_song_version, chords_for_input):
+    cur = conn.cursor()
+    for chord in chords_for_input:
+        root_degree_id = chord[0]
+        chord_type_id = chord[1]
+        SQL = '''INSERT INTO SongVersionChords(SongVersionID, RootDegreeID, ChordTypeID)
+                VALUES
+                    (%s, %s, %s)
+        '''
+        cur.execute(
+            SQL,
+            (id_of_song_version, root_degree_id, chord_type_id)
+        )
+
 
 
 def process_chords(conn, chords, song_key):
+    cur = conn.cursor()
     res = []
     song_key_numeric = note_to_number(song_key)
     for chord in chords:
@@ -114,72 +129,23 @@ def process_chords(conn, chords, song_key):
         res.append((root_degree_id, chord_type_id))
     return res
 
-# def input_song_version_chords(conn, id_of_song_version, processed_chord_ids):
-#     cur = conn.cursor()
-#     # Want to find a way to do this all in one shot, but it's 
-#     # hard to pass Psycopg2 a variable number of arguments
-#     for chord_id in processed_chord_ids:        
-#         SQL = '''INSERT INTO SongVersionChords(SongVersionID, ChordID)
-#                 VALUES
-#                     (%s, %s)
-#         '''
-#         cur.execute(
-#             SQL,
-#             (id_of_song_version, chord_id)
-#         )
-
-# Processed_chords is a list of string doubles (root_degree, chord_type). 
-# It returns the chords as a list of integers, their chordIDs in the databse.
-def input_chords(conn, processed_chords: List[Tuple[str]]) -> List[int]:
+def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
     cur = conn.cursor()
-    chord_ids = []
-    for chord in processed_chords:
-# What I want to do here is to take all these doubles and turn them into ChordIDs, adding things if necessary. First I need to get the chordtypeID and throw an exception if it's not already there
-        root_degree = chord[0]
-        chord_type = chord[1]
-        SQL = '''SELECT ChordTypeID
-                     FROM ChordTypes
-                     WHERE ChordTypeName = %s
+    for chord in chords_for_input: 
+        root_degree_id = chord[0]
+        chord_type_id = chord[1]
+        SQL = '''INSERT INTO ChordsByDegree(RootDegreeID, ChordTypeID)
+                 SELECT %s, %s
+                    WHERE NOT EXISTS(
+                        SELECT 1 FROM ChordsByDegree
+                        WHERE RootDegreeID = %s
+                        AND ChordTypeID = %s
+                    )
               ''' 
         cur.execute(
             SQL,
-            (chord_type,)
+            (root_degree_id,chord_type_id, root_degree_id, chord_type_id)
         )
-        fetch = cur.fetchone()
-        if not fetch:
-            print("The chord type", chord_type, "was not found in the ChordTypes table.")
-            raise Exception()
-        chord_type_id = fetch[0]
-
-#        SQL = '''INSERT INTO Chords(ChordName)
-#                SELECT %s
-#                    WHERE NOT EXISTS (
-#                        SELECT 1 FROM Chords
-#                        WHERE ChordName = %s
-#                    ) 
-#                RETURNING ChordID
-#        '''
-#        cur.execute(
-#            SQL,
-#            (chord,chord)
-#        )
-#        fetch = cur.fetchone()
-#        if fetch:
-#            chord_ids.append(fetch[0])
-#        else:
-#            SQL2 = '''SELECT ChordID 
-#                    FROM Chords
-#                    WHERE ChordName=%s
-#            '''
-#            cur.execute(
-#                SQL2,
-#                (chord,)
-#            )
-#            fetch2 = cur.fetchone()
-#            if not fetch2:
-#                raise Exception("The cursor was empty when it shouldn't have been.")
-#            chord_ids.append(fetch2[0])
-#    return chord_ids
 
 # Returns ArtistID of new row (or ArtistID of row which already existed)
 def input_artist(conn, artist_name):
@@ -217,7 +183,7 @@ def input_artist(conn, artist_name):
 # Returns ID_of_song, true if song was successfully input and -1,false if it was not (if it was already there)
 def input_song_version(conn, song_version_name, id_of_artist, id_of_key):
     cur = conn.cursor()
-    SQL = '''INSERT INTO SongVersions(SongVersionName, ArtistID, RootToneID)
+    SQL = '''INSERT INTO SongVersions(SongVersionName, ArtistID, RootAbsoluteNoteID)
             SELECT %s, %s, %s
                 WHERE NOT EXISTS(
                     SELECT 1 FROM SongVersions
