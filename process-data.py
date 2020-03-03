@@ -11,20 +11,29 @@ def main(MAX_N_TO_PROCESS = None):
         The 'Songbook' directory wasn't where the process-data.py script expected it to be.\
         It can be modified by changing the constructor of project_folder (a pathlib.Path object).
         ''')
-            chords_file = project_folder / "chords.csv"
+    
+    chords_file = project_folder / "chords.csv"
     if not chords_file.exists():
-        raise Exception('''
-        The file 'chords.csv' was not there to be processed by process-data.py.\
-        It should be inside the Songbook directory.
-        ''')
+        raise Exception
+        (
+            '''The file 'chords.csv' was not there to be processed by process-data.py.\
+            It should be inside the Songbook directory.'''
+        )
+
     _key_file = project_folder / "key-file.txt"
     if not _key_file.exists():
-        raise Exception('''
-        The process-data module was unable to find the key-file.txt file to log into the postgres database.
-        ''')
+        raise Exception
+        (
+            '''The process-data module was unable to find the key-file.txt file\
+                to log into the postgres database.'''
+        )
     
     if MAX_N_TO_PROCESS is None:
-        print("You did not choose a maximum number of entries to process. It has been automatically set to 500.")
+        print
+        (
+            '''You did not choose a maximum number of entries to process.\
+                 It has been automatically set to 500.'''
+        )
         MAX_N_TO_PROCESS = 500
 
     with _key_file.open() as key_file:
@@ -48,16 +57,19 @@ def main(MAX_N_TO_PROCESS = None):
                 continue
             chords_list = row['Chords'].split(',')
             try:
-                processed_chords = process_chords(chords_list, row['Song Key'])
+                chords_for_input = process_chords(conn, chords_list, row['Song Key'])
             except:
                 print("Something went wrong while parsing the chords of " + row['Song Version Name'] + ".")
                 continue
-
-            try:
-                processed_chord_ids = input_chords(conn, processed_chords)
-            except:
-                print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
-                continue 
+            
+            print(row['Song Name'], "chords:")
+            print(chords_for_input)
+            # fix this
+            # try:
+            #     processed_chord_ids = input_chords(conn, processed_chords)
+            # except:
+            #     print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
+            #     continue 
             id_of_artist = input_artist(conn, row['Artist'])
             id_of_key = note_to_number(row['Song Key'])
             id_of_song_version, insert_successful = input_song_version(
@@ -73,6 +85,49 @@ def main(MAX_N_TO_PROCESS = None):
            # input_song_version_chords(conn, id_of_song_version, processed_chord_ids)
 
 
+def process_chords(conn, chords, song_key):
+    res = []
+    song_key_numeric = note_to_number(song_key)
+    for chord in chords:
+
+        # If our chord comes with a sharp or a flat in the name
+        if len(chord)>=2 and (chord[1] == '#' or chord[1] == 'b'):
+            chord_absolute_root = chord[0:2]
+            chord_type = chord[2:]
+        else:
+            chord_absolute_root = chord[0]
+            chord_type = chord[1:]
+        root_degree_id = (note_to_number(chord_absolute_root) - song_key_numeric) % 12
+        SQL = '''SELECT ChordTypeID
+                     FROM ChordTypes
+                     WHERE ChordTypeName = %s
+              ''' 
+        cur.execute(
+            SQL,
+            (chord_type,)
+        )
+        fetch = cur.fetchone()
+        if not fetch:
+            print("The chord type", chord_type, "was not found in the ChordTypes table.")
+            raise Exception()
+        chord_type_id = fetch[0] 
+        res.append((root_degree_id, chord_type_id))
+    return res
+
+# def input_song_version_chords(conn, id_of_song_version, processed_chord_ids):
+#     cur = conn.cursor()
+#     # Want to find a way to do this all in one shot, but it's 
+#     # hard to pass Psycopg2 a variable number of arguments
+#     for chord_id in processed_chord_ids:        
+#         SQL = '''INSERT INTO SongVersionChords(SongVersionID, ChordID)
+#                 VALUES
+#                     (%s, %s)
+#         '''
+#         cur.execute(
+#             SQL,
+#             (id_of_song_version, chord_id)
+#         )
+
 # Processed_chords is a list of string doubles (root_degree, chord_type). 
 # It returns the chords as a list of integers, their chordIDs in the databse.
 def input_chords(conn, processed_chords: List[Tuple[str]]) -> List[int]:
@@ -83,9 +138,9 @@ def input_chords(conn, processed_chords: List[Tuple[str]]) -> List[int]:
         root_degree = chord[0]
         chord_type = chord[1]
         SQL = '''SELECT ChordTypeID
-                FROM ChordTypes
-                WHERE ChordTypeName = %s
-        ''' 
+                     FROM ChordTypes
+                     WHERE ChordTypeName = %s
+              ''' 
         cur.execute(
             SQL,
             (chord_type,)
@@ -125,37 +180,6 @@ def input_chords(conn, processed_chords: List[Tuple[str]]) -> List[int]:
 #                raise Exception("The cursor was empty when it shouldn't have been.")
 #            chord_ids.append(fetch2[0])
 #    return chord_ids
-
-
-def process_chords(chords, song_key):
-    res = []
-    song_key_numeric = note_to_number(song_key)
-    for chord in chords:
-
-        # If our chord comes with a sharp or a flat in the name
-        if len(chord)>=2 and (chord[1] == '#' or chord[1] == 'b'):
-            chord_absolute_root = chord[0:2]
-            chord_type = chord[2:]
-        else:
-            chord_absolute_root = chord[0]
-            chord_type = chord[1:]
-        root_degree_numeric = (note_to_number(chord_absolute_root) - song_key_numeric) % 12
-        res.append((root_degree_numeric, chord_type))
-    return res
-
-# def input_song_version_chords(conn, id_of_song_version, processed_chord_ids):
-#     cur = conn.cursor()
-#     # Want to find a way to do this all in one shot, but it's 
-#     # hard to pass Psycopg2 a variable number of arguments
-#     for chord_id in processed_chord_ids:        
-#         SQL = '''INSERT INTO SongVersionChords(SongVersionID, ChordID)
-#                 VALUES
-#                     (%s, %s)
-#         '''
-#         cur.execute(
-#             SQL,
-#             (id_of_song_version, chord_id)
-#         )
 
 # Returns ArtistID of new row (or ArtistID of row which already existed)
 def input_artist(conn, artist_name):
