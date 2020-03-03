@@ -200,7 +200,6 @@ def main():
     except:
         print("I am unable to connect to the database")
 
-
 def mode_input(mode_name: str, mode_notes: list) -> None:
     pass
     # '''
