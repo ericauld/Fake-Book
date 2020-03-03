@@ -62,12 +62,15 @@ def main(MAX_N_TO_PROCESS = None):
             except:
                 print("Something went wrong while parsing the chords of " + row['Song Version Name'] + ".")
                 continue
-            
-            try:
-                input_chords(conn, chords_for_input)
-            except:
-                print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
-                continue 
+
+            print("Inputting chords to db")
+            print(chords_for_input)
+            input_chords(conn, chords_for_input)
+#            try:
+#                input_chords(conn, chords_for_input)
+#            except:
+#                print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
+#                continue 
             id_of_artist = input_artist(conn, row['Artist Name'])
             id_of_key = note_to_number(row['Song Key'])
             id_of_song_version, insert_successful = input_song_version(
@@ -80,8 +83,46 @@ def main(MAX_N_TO_PROCESS = None):
             if not insert_successful:
                 print("Song version '", row['Song Version Name'], "' was already in the database.")
                 continue
-            
+            print("Inputting following song version chords for song", row['Song Version Name'])
+            print(chords_for_input)
             input_song_version_chords(conn, id_of_song_version, chords_for_input)
+
+#Input chords inserts items into ChordsByDegree and ChordNoteDegrees (the composite table)
+def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
+    cur = conn.cursor()
+    for chord in chords_for_input: 
+        root_degree_id = chord[0]
+        chord_type_id = chord[1]
+        SQL = '''INSERT INTO ChordsByDegree(RootDegreeID, ChordTypeID)
+                 SELECT %s, %s
+                    WHERE NOT EXISTS(
+                        SELECT 1 FROM ChordsByDegree
+                        WHERE RootDegreeID = %s
+                        AND ChordTypeID = %s
+                    )
+                RETURNING 1;
+              ''' 
+        cur.execute(
+            SQL,
+            (root_degree_id,chord_type_id, root_degree_id, chord_type_id)
+        )
+        fetch = cur.fetchone()
+        #If the chord is already in the database
+        if not fetch :
+            continue
+        SQL2 = '''SELECT ChordTypeShape
+                        FROM ChordTypes
+                        WHERE ChordTypeId = %s 
+                '''
+        cur.execute(
+            SQL2,
+            (chord_type_id,)
+        )
+        fetch2 = cur.fetchone()
+        print("Fetched chord type shape in input...")
+        print(fetch2)
+        return
+
 
 
 def input_song_version_chords(conn, id_of_song_version, chords_for_input):
@@ -129,41 +170,6 @@ def process_chords(conn, chords, song_key):
         chord_type_id = fetch[0] 
         res.append((root_degree_id, chord_type_id))
     return res
-
-#Input chords inserts items into ChordsByDegree and ChordNoteDegrees (the composite table)
-def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
-    cur = conn.cursor()
-    for chord in chords_for_input: 
-        root_degree_id = chord[0]
-        chord_type_id = chord[1]
-        SQL = '''INSERT INTO ChordsByDegree(RootDegreeID, ChordTypeID)
-                 SELECT %s, %s
-                    WHERE NOT EXISTS(
-                        SELECT 1 FROM ChordsByDegree
-                        WHERE RootDegreeID = %s
-                        AND ChordTypeID = %s
-                    )
-                RETURNING 1;
-              ''' 
-        cur.execute(
-            SQL,
-            (root_degree_id,chord_type_id, root_degree_id, chord_type_id)
-        )
-        fetch = cur.fetch()
-        #If the chord is already in the database
-        if not fetch :
-            continue
-        SQL2 = '''SELECT ChordTypeShape
-                        FROM ChordTypes
-                        WHERE ChordTypeId = %s 
-                '''
-        cur.execute(
-            SQL2,
-            (chord_type_id,)
-        )
-        fetch2 = cur.fetchone()
-        print(fetch2)
-
 
 # Returns ArtistID of new row (or ArtistID of row which already existed)
 def input_artist(conn, artist_name):
