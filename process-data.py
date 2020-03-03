@@ -63,14 +63,11 @@ def main(MAX_N_TO_PROCESS = None):
                 print("Something went wrong while parsing the chords of " + row['Song Version Name'] + ".")
                 continue
 
-            print("Inputting chords to db")
-            print(chords_for_input)
-            input_chords(conn, chords_for_input)
-#            try:
-#                input_chords(conn, chords_for_input)
-#            except:
-#                print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
-#                continue 
+            try:
+                input_chords(conn, chords_for_input)
+            except:
+                print("An error occurred while inputting chords for the song '" + row['Song Version Name'] + "'. The song was skipped.")
+                continue 
             id_of_artist = input_artist(conn, row['Artist Name'])
             id_of_key = note_to_number(row['Song Key'])
             id_of_song_version, insert_successful = input_song_version(
@@ -83,11 +80,10 @@ def main(MAX_N_TO_PROCESS = None):
             if not insert_successful:
                 print("Song version '", row['Song Version Name'], "' was already in the database.")
                 continue
-            print("Inputting following song version chords for song", row['Song Version Name'])
-            print(chords_for_input)
+            
             input_song_version_chords(conn, id_of_song_version, chords_for_input)
 
-#Input chords inserts items into ChordsByDegree and ChordNoteDegrees (the composite table)
+#Input chords inserts items into both ChordsByDegree and ChordNoteDegrees (the composite table)
 def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
     cur = conn.cursor()
     for chord in chords_for_input: 
@@ -107,9 +103,11 @@ def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
             (root_degree_id,chord_type_id, root_degree_id, chord_type_id)
         )
         fetch = cur.fetchone()
+        
         #If the chord is already in the database
-        if not fetch :
+        if not fetch:
             continue
+        
         SQL2 = '''SELECT ChordTypeShape
                         FROM ChordTypes
                         WHERE ChordTypeId = %s 
@@ -118,12 +116,30 @@ def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
             SQL2,
             (chord_type_id,)
         )
-        fetch2 = cur.fetchone()
-        print("Fetched chord type shape in input...")
-        print(fetch2)
-        return
-
-
+        
+        # get the chord shape as a string of comma-separated offset values
+        chord_shape_string = cur.fetchone()[0]
+        offsets = chord_shape_string.split(",")
+        
+        # casting offsets to int
+        offsets = list(map(int, offsets))
+        SQL3 = '''INSERT INTO ChordNoteDegrees(NoteDegreeID, RootDegreeID, ChordTypeID) 
+                    VALUES 
+                       (%s, %s, %s)
+                '''
+        
+        # note degree starts as the root, and will vary with the offsets. 
+        # Typically the first offset is zero, because the first note in a chord
+        # type is usually the root itself.
+        note_degree = root_degree_id
+        for offset in offsets:
+            note_degree += offset
+            # In case the note_degree has become bigger than 12
+            note_degree %= 12
+            cur.execute(
+                SQL3,
+                (note_degree, root_degree_id, chord_type_id)
+            )
 
 def input_song_version_chords(conn, id_of_song_version, chords_for_input):
     cur = conn.cursor()
