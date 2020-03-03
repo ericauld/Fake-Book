@@ -83,6 +83,7 @@ def main(MAX_N_TO_PROCESS = None):
             
             input_song_version_chords(conn, id_of_song_version, chords_for_input)
 
+
 def input_song_version_chords(conn, id_of_song_version, chords_for_input):
     cur = conn.cursor()
     for chord in chords_for_input:
@@ -90,7 +91,7 @@ def input_song_version_chords(conn, id_of_song_version, chords_for_input):
         chord_type_id = chord[1]
         SQL = '''INSERT INTO SongVersionChords(SongVersionID, RootDegreeID, ChordTypeID)
                 VALUES
-                    (%s, %s, %s)
+                    (%s, %s, %s);
         '''
         cur.execute(
             SQL,
@@ -115,7 +116,7 @@ def process_chords(conn, chords, song_key):
         root_degree_id = (note_to_number(chord_absolute_root) - song_key_numeric) % 12
         SQL = '''SELECT ChordTypeID
                      FROM ChordTypes
-                     WHERE ChordTypeName = %s
+                     WHERE ChordTypeName = %s;
               ''' 
         cur.execute(
             SQL,
@@ -129,6 +130,7 @@ def process_chords(conn, chords, song_key):
         res.append((root_degree_id, chord_type_id))
     return res
 
+#Input chords inserts items into ChordsByDegree and ChordNoteDegrees (the composite table)
 def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
     cur = conn.cursor()
     for chord in chords_for_input: 
@@ -141,11 +143,27 @@ def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
                         WHERE RootDegreeID = %s
                         AND ChordTypeID = %s
                     )
+                RETURNING 1;
               ''' 
         cur.execute(
             SQL,
             (root_degree_id,chord_type_id, root_degree_id, chord_type_id)
         )
+        fetch = cur.fetch()
+        #If the chord is already in the database
+        if not fetch :
+            continue
+        SQL2 = '''SELECT ChordTypeShape
+                        FROM ChordTypes
+                        WHERE ChordTypeId = %s 
+                '''
+        cur.execute(
+            SQL2,
+            (chord_type_id,)
+        )
+        fetch2 = cur.fetchone()
+        print(fetch2)
+
 
 # Returns ArtistID of new row (or ArtistID of row which already existed)
 def input_artist(conn, artist_name):
@@ -203,24 +221,24 @@ def input_song_version(conn, song_version_name, id_of_artist, id_of_key):
 # # We encode each absolute note as a number. This is also its AbsoluteNoteID in the Postgres database    
 def note_to_number(note_name):
     note_to_number_dict = {
-        'C':1,
-        'C#':2,
-        'Db':2,
-        'D':3,
-        'D#':4,
-        'Eb':4,
-        'E':5,
-        'F':6,
-        'F#':7,
-        'Gb':7,
-        'G':8,
-        'G#':9,
-        'Ab':9,
-        'A':10,
-        'A#':11,
-        'Bb':11,
-        'B':12,
-        'Cb':12
+        'C':0,
+        'C#':1,
+        'Db':1,
+        'D':2,
+        'D#':3,
+        'Eb':3,
+        'E':4,
+        'F':5,
+        'F#':6,
+        'Gb':6,
+        'G':7,
+        'G#':8,
+        'Ab':8,
+        'A':9,
+        'A#':10,
+        'Bb':10,
+        'B':11,
+        'Cb':11
     }
     return note_to_number_dict[note_name]
 
