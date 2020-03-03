@@ -139,8 +139,6 @@ def input_song_version_chords(conn, id_of_song_version, chords_for_input):
             (id_of_song_version, root_degree_id, chord_type_id)
         )
 
-
-
 def process_chords(conn, chords, song_key):
     cur = conn.cursor()
     res = []
