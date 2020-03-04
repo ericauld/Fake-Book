@@ -215,18 +215,13 @@ def main():
         (7, 0),(7, 1),(7, 3),(7, 5),(7, 6),(7, 8),(7, 10);
     """
 
-    conn = psycopg2.connect(login_info)
-    conn.set_isolation_level(0)
-    cur = conn.cursor()
-    cur.execute(SQL)
-
-#    try:
-#        conn = psycopg2.connect(login_info)
-#        conn.set_isolation_level(0)
-#        cur = conn.cursor()
-#        cur.execute(SQL)
-#    except:
-#        print("I am unable to connect to the database")
+    try:
+        conn = psycopg2.connect(login_info)
+        conn.set_isolation_level(0)
+        cur = conn.cursor()
+        cur.execute(SQL)
+    except:
+        print("I am unable to connect to the database")
 
 def mode_input(mode_name: str, mode_notes: list) -> None:
     pass
