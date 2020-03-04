@@ -125,6 +125,16 @@ def main():
         FOREIGN KEY (GenreID) REFERENCES Genres(GenreID)
     );
 
+    CREATE TABLE SongVersionDistances(
+        SongVersionID1 BIGINT,
+        SongVersionID2 BIGINT,
+        Distance NUMERIC,
+        PRIMARY KEY (SongversionID1, SongVersionID2),
+        FOREIGN KEY (SongVersionID1) REFERENCES SongVersions(SongVersionID),
+        FOREIGN KEY (SongVersionID2) REFERENCES SongVersions(SongVersionID),
+        CHECK SongVersionID1 < SongVersionID2
+    );
+
     INSERT INTO AbsoluteNotes(AbsoluteNoteID)
     VALUES
         (0), 
