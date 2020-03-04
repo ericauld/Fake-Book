@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-#
-
 import psycopg2
 from pathlib import Path
 
