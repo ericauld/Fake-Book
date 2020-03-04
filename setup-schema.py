@@ -186,11 +186,27 @@ def main():
         ('m', '0,3,4'),
         ('5', '0,7'),
     	('7', '0,4,3,3');
+    
+    INSERT INTO Modes(ModeID, ModeName)
+    VALUES
+        (1, 'Ionian'),
+        (2, 'Dorian'),
+        (3, 'Phrygian'),
+        (4, 'Lydian'),
+        (5, 'Mixolydian'),
+        (6, 'Aeolian'),
+        (7, 'Locrian');
+
+    INSERT INTO ModeNoteDegrees(ModeID, NoteDegreeID)
+    VALUES
+        (1, 0),(1, 2),(1, 4),(1, 5),(1, 7),(1, 9),(1, 11),
+        (2, 0),(2, 2),(2, 3),(2, 5),(2, 7),(2, 9),(2, 10),
+        (3, 0),(3, 1),(3, 3),(3, 5),(3, 7),(3, 8),(3, 10),
+        (4, 0),(4, 2),(4, 4),(4, 6),(4, 7),(4, 9),(4, 11),
+        (5, 0),(5, 2),(5, 4),(5, 5),(5, 7),(5, 9),(5, 10),
+        (6, 0),(6, 2),(6, 3),(6, 5),(6, 7),(6, 8),(6, 10),
+        (7, 0),(7, 1),(7, 3),(7, 5),(7, 6),(7, 8),(7, 10);
     """
-
-    # INSERT INTO ChordNoteDegrees()
-
-    # INSERT INTO Modes()
 
     # Distance table
 
