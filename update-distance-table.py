@@ -17,18 +17,68 @@ def main():
     except:
         print("I am unable to connect to the database")
 
-    SQL = '''Select sv1.SongVersionName, sv2.SongVersionName
+    update_distance(conn, [1, 2])
+    return 
+    
+    SQL = '''Select sv1.SongVersionID, sv2.SongVersionID
                 From 
                     SongVersions sv1,
 	                SongVersions sv2
-                Where sv1.SongVersionName < sv2.SongVersionName
+                Where sv1.SongVersionID <= sv2.SongVersionID;
     '''
 
     cur = conn.cursor()
     cur.execute(SQL)
-    print(cur.fetchone())
-    print(cur.fetchone())
-    print(cur.fetchall())
+    song_id_pairs = cur.fetchall()
+    cur.close()
+
+    for song_id_pair in song_id_pairs:
+        update_distance(conn, song_id_pair)
+
+def update_distance(conn, song_id_pair):
+    cur = conn.cursor()
+    song_id_1 = song_id_pair[0]
+    song_id_2 = song_id_pair[1]
+    SQL1 = '''SELECT DISTINCT chordnot.NoteDegreeID as NoteID
+                FROM 
+                    SongVersions ver
+                    INNER JOIN SongVersionChords verch
+                        ON ver.SongVersionID = verch.SongVersionID
+                    INNER JOIN ChordNoteDegrees chordnot
+                        ON 
+                            chordnot.RootDegreeID = verch.RootDegreeID
+                            AND chordnot.ChordTypeID = verch.ChordTypeID
+                WHERE ver.SongVersionID = %s
+            ORDER BY chordnot.NoteDegreeID;
+        '''
+    cur.execute(
+        SQL1,
+        (song_id_1,)
+    )
+    notes_1 = cur.fetchall()
+
+    SQL2 = '''SELECT DISTINCT chordnot.NoteDegreeID as NoteID
+                FROM 
+                    SongVersions ver
+                    INNER JOIN SongVersionChords verch
+                        ON ver.SongVersionID = verch.SongVersionID
+                    INNER JOIN ChordNoteDegrees chordnot
+                        ON 
+                            chordnot.RootDegreeID = verch.RootDegreeID
+                            AND chordnot.ChordTypeID = verch.ChordTypeID
+                WHERE ver.SongVersionID = %s
+            ORDER BY chordnot.NoteDegreeID;
+        '''
+    cur.execute(
+        SQL2,
+        (song_id_2,)
+    )
+    notes_2 = cur.fetchall()
+
+    print(notes_1, notes_2)
+    
+
+
 
 if __name__=='__main__':
     main()
