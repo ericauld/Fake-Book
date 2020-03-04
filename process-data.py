@@ -262,9 +262,5 @@ def note_to_number(note_name):
     }
     return note_to_number_dict[note_name]
 
-
-def update_distance_table():
-
-
 if __name__=='__main__':
     main()

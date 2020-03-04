@@ -17,5 +17,18 @@ def main():
     except:
         print("I am unable to connect to the database")
 
+    SQL = '''Select sv1.SongVersionName, sv2.SongVersionName
+                From 
+                    SongVersions sv1,
+	                SongVersions sv2
+                Where sv1.SongVersionName < sv2.SongVersionName
+    '''
+
+    cur = conn.cursor()
+    cur.execute(SQL)
+    print(cur.fetchone())
+    print(cur.fetchone())
+    print(cur.fetchall())
+
 if __name__=='__main__':
     main()
