@@ -17,14 +17,11 @@ def main():
     except:
         print("I am unable to connect to the database")
 
-    update_distance(conn, [1, 2])
-    return 
-    
-    SQL = '''Select sv1.SongVersionID, sv2.SongVersionID
-                From 
+    SQL = '''SELECT sv1.SongVersionID, sv2.SongVersionID
+                FROM 
                     SongVersions sv1,
 	                SongVersions sv2
-                Where sv1.SongVersionID <= sv2.SongVersionID;
+                WHERE sv1.SongVersionID <= sv2.SongVersionID;
     '''
 
     cur = conn.cursor()
@@ -75,10 +72,25 @@ def update_distance(conn, song_id_pair):
     )
     notes_2 = cur.fetchall()
 
-    print(notes_1, notes_2)
+    notes_1 = {note[0] for note in notes_1}
+    notes_2 = {note[0] for note in notes_2}
     
+    distance = (len(notes_1.symmetric_difference(notes_2)))
 
-
+    SQL3 = '''INSERT INTO SongVersionPairs(SongVersionID1, SongVersionID2, Distance)
+                  SELECT %s, %s, %s
+                      WHERE NOT EXISTS
+                          (SELECT 1 
+                               FROM SongVersionPairs
+                           WHERE 
+                               SongVersionID1 = %s
+                               AND SongVersionID2 = %s
+                          )
+                  
+        '''
+    cur.execute(
+        SQL3,
+        (song_id_1, song_id_2, distance, song_id_1, song_id_2))
 
 if __name__=='__main__':
     main()

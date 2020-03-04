@@ -125,14 +125,14 @@ def main():
         FOREIGN KEY (GenreID) REFERENCES Genres(GenreID)
     );
 
-    CREATE TABLE SongVersionDistances(
+    CREATE TABLE SongVersionPairs(
         SongVersionID1 BIGINT,
         SongVersionID2 BIGINT,
         Distance NUMERIC,
-        PRIMARY KEY (SongversionID1, SongVersionID2),
+        PRIMARY KEY (SongVersionID1, SongVersionID2),
         FOREIGN KEY (SongVersionID1) REFERENCES SongVersions(SongVersionID),
         FOREIGN KEY (SongVersionID2) REFERENCES SongVersions(SongVersionID),
-        CHECK SongVersionID1 < SongVersionID2
+        CHECK (SongVersionID1 <= SongVersionID2)
     );
 
     INSERT INTO AbsoluteNotes(AbsoluteNoteID)
@@ -215,15 +215,18 @@ def main():
         (7, 0),(7, 1),(7, 3),(7, 5),(7, 6),(7, 8),(7, 10);
     """
 
-    # Distance table
+    conn = psycopg2.connect(login_info)
+    conn.set_isolation_level(0)
+    cur = conn.cursor()
+    cur.execute(SQL)
 
-    try:
-        conn = psycopg2.connect(login_info)
-        conn.set_isolation_level(0)
-        cur = conn.cursor()
-        cur.execute(SQL)
-    except:
-        print("I am unable to connect to the database")
+#    try:
+#        conn = psycopg2.connect(login_info)
+#        conn.set_isolation_level(0)
+#        cur = conn.cursor()
+#        cur.execute(SQL)
+#    except:
+#        print("I am unable to connect to the database")
 
 def mode_input(mode_name: str, mode_notes: list) -> None:
     pass
