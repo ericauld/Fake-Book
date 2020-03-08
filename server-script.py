@@ -17,62 +17,54 @@ login_info = "dbname='postgres' user='postgres' host='localhost' password='{}'".
 try:
     conn = psycopg2.connect(login_info)
     conn.set_isolation_level(0)
+    print("Database connection successful")
 except:
     print("I am unable to connect to the database")
-
-
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
-    dcc.Input(id='text-input', value='initial value', type='text'),
+    dcc.Input(id='my-id', value='initial value', type='text'),
+
+    html.Label('Checkboxes'),
     dcc.Checklist(
-        id = 'checkbox-input',
+        id='checkbox_input',
         options=[
-            {'label': 'New York City', 'value': 'NYC'},
-            {'label': 'Montréal', 'value': 'MTL'},
-            {'label': 'San Francisco', 'value': 'SF'}
+            {'label': 'I', 'value': 1},
+            {'label': '\u266D'+'II', 'value': 2},
+            {'label': 'II', 'value': 3},
+            {'label': '\u266D'+'III', 'value': 4}, 
+            {'label': 'III', 'value': 5},
+            {'label': 'IV', 'value': 6},
+            {'label': '\u266F'+'IV', 'value': 7},
+
+            {'label': 'III', 'value': 5},
+            {'label': 'III', 'value': 5},
+            {'label': 'III', 'value': 5},
+            {'label': 'III', 'value': 5},
+            {'label': 'III', 'value': 5},
         ],
-        value=['MTL', 'SF'],
+        value=[1, 3, 5, 6, 8, 10, 11],
         labelStyle={'display': 'inline-block'}
     ),
-    html.Div(id='output-div', children = 'a')
+
+    html.Div(id='my-div')
 ])
 
+
 @app.callback(
-    Output(component_id='output-div', component_property='children'),
+    Output(component_id='my-div', component_property='children'),
     [
-        Input(component_id='text-input', component_property='value'),
-        Input(component_id='checkbox-input', component_property='value')
-    ],
+        Input('checkbox_input', 'value'),
+        Input(component_id='my-id', component_property='value')
+    ]
 )
-def generate_song_list(text_input, checkbox_input):
-    print(text_input)
+def update_output_div(checkbox_input, input_value):
     print(checkbox_input)
-    print("asdf")
-    return "test string"
+    return 'You\'ve entered "{}"'.format(input_value)
 
-
-
-#    SQL = 'SELECT * FROM SongVersions;'
-#    cur = conn.cursor()
-#    cur.execute(SQL)
-#    print(cur.fetchall())
-#    print(cur.description)
-#    return "2"
-    
-    
-#    return html.Table(
-#        # Header
-#        [html.Tr([html.Th(col) for col in dataframe.columns])] +
-#
-#        # Body
-#        [html.Tr([
-#            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
-#        ]) for i in range(min(len(dataframe), max_rows))]
-#    )
 
 if __name__ == '__main__':
     app.run_server(debug=True, host = '0.0.0.0')
