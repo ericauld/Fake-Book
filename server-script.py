@@ -4,6 +4,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import psycopg2
+from psycopg2.extras import RealDictCursor
 from pathlib import Path
 
 project_folder = Path("/home/ubuntu/Songbook")
@@ -27,7 +28,6 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
-    dcc.Input(id='my-id', value='initial value', type='text'),
 
     html.Label('Find songs by mode'),
     dcc.Checklist(
@@ -55,7 +55,7 @@ app.layout = html.Div([
     
     dash_table.DataTable(
         id = 'table',
-        columns = [{'name':'stuff', 'id':'stuff'}, {'name':'stuff2', 'id':'stuff2'}],
+        columns = [{'name':'name', 'id':'name'}, {'name':'noteid', 'id':'noteid'}],
         data = [{'stuff': 1, 'stuff2': 2}]
     ),
 
@@ -64,14 +64,13 @@ app.layout = html.Div([
 
 
 @app.callback(
-    Output(component_id='my-div', component_property='children'),
+    Output(component_id='table', component_property='data'),
     [Input('search-button', 'n_clicks')],
     [
         State('checkbox_input', 'value'),
-        State(component_id='my-id', component_property='value')
     ]
 )
-def update_output_div(n_clicks, checkbox_input, input_value):
+def update_output_div(n_clicks, checkbox_input):
     SQL = '''SELECT DISTINCT ver.SongVersionName as name, chordnot.NoteDegreeID as NoteID
                 FROM 
                     SongVersions ver
@@ -84,10 +83,10 @@ def update_output_div(n_clicks, checkbox_input, input_value):
                 WHERE ver.SongVersionName = 'Kiss Me'
             ORDER BY chordnot.NoteDegreeID;
     '''
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory = RealDictCursor)
     cur.execute(SQL)
-    print(cur.fetchall())
-    return input_value
+#    print(cur.fetchall())
+    return cur.fetchall()
 
 if __name__ == '__main__':
     app.run_server(debug=True, host = '0.0.0.0')
