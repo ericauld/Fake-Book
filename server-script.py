@@ -31,6 +31,7 @@ app.layout = html.Div([
     html.Label('Find songs by mode'),
     dcc.Checklist(
         id='checkbox_input',
+        style = {'width': '200%'},
         options=[
             {'label': 'Root', 'value': 0},
             {'label': '\u266D'+'II', 'value': 1},
@@ -38,9 +39,9 @@ app.layout = html.Div([
             {'label': '\u266D'+'III', 'value': 3}, 
             {'label': 'III', 'value': 4},
             {'label': 'IV', 'value': 5},
-            {'label': '\u266F'+'IV\/' + '\u266D' + 'V', 'value': 6},
+            {'label': '\u266F'+'IV / ' + '\u266D' + 'V', 'value': 6},
             {'label': 'V', 'value': 7},
-            {'label': '\u266F' + 'V \/' + '\u266D' + 'VI', 'value': 8},
+            {'label': '\u266F' + 'V / ' + '\u266D' + 'VI', 'value': 8},
             {'label': 'VI', 'value': 9},
             {'label': '\u266D' + 'VII', 'value': 10},
             {'label': 'VII', 'value': 11},
@@ -49,6 +50,8 @@ app.layout = html.Div([
         labelStyle={'display': 'inline-block'}
     ),
 
+#    html.Button('Search', id='search-button')
+    
     html.Div(id='my-div')
 ])
 
@@ -61,9 +64,22 @@ app.layout = html.Div([
     ]
 )
 def update_output_div(checkbox_input, input_value):
-    print(checkbox_input)
-    return 'You\'ve entered "{}"'.format(input_value)
-
+    SQL = '''SELECT DISTINCT ver.SongVersionName as name, chordnot.NoteDegreeID as NoteID
+                FROM 
+                    SongVersions ver
+                    INNER JOIN SongVersionChords verch
+                        ON ver.SongVersionID = verch.SongVersionID
+                    INNER JOIN ChordNoteDegrees chordnot
+                        ON 
+                            chordnot.RootDegreeID = verch.RootDegreeID
+                            AND chordnot.ChordTypeID = verch.ChordTypeID
+                WHERE ver.SongVersionName = 'Kiss Me'
+            ORDER BY chordnot.NoteDegreeID;
+    '''
+    cur = conn.cursor()
+    cur.execute(SQL)
+    print(cur.fetchall())
+    return input_value
 
 if __name__ == '__main__':
     app.run_server(debug=True, host = '0.0.0.0')
