@@ -28,23 +28,22 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div([
     dcc.Input(id='my-id', value='initial value', type='text'),
 
-    html.Label('Checkboxes'),
+    html.Label('Find songs by mode'),
     dcc.Checklist(
         id='checkbox_input',
         options=[
-            {'label': 'I', 'value': 1},
-            {'label': '\u266D'+'II', 'value': 2},
-            {'label': 'II', 'value': 3},
-            {'label': '\u266D'+'III', 'value': 4}, 
-            {'label': 'III', 'value': 5},
-            {'label': 'IV', 'value': 6},
-            {'label': '\u266F'+'IV', 'value': 7},
-
-            {'label': 'III', 'value': 5},
-            {'label': 'III', 'value': 5},
-            {'label': 'III', 'value': 5},
-            {'label': 'III', 'value': 5},
-            {'label': 'III', 'value': 5},
+            {'label': 'Root', 'value': 0},
+            {'label': '\u266D'+'II', 'value': 1},
+            {'label': 'II', 'value': 2},
+            {'label': '\u266D'+'III', 'value': 3}, 
+            {'label': 'III', 'value': 4},
+            {'label': 'IV', 'value': 5},
+            {'label': '\u266F'+'IV\/' + '\u266D' + 'V', 'value': 6},
+            {'label': 'V', 'value': 7},
+            {'label': '\u266F' + 'V \/' + '\u266D' + 'VI', 'value': 8},
+            {'label': 'VI', 'value': 9},
+            {'label': '\u266D' + 'VII', 'value': 10},
+            {'label': 'VII', 'value': 11},
         ],
         value=[1, 3, 5, 6, 8, 10, 11],
         labelStyle={'display': 'inline-block'}
