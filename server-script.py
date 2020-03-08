@@ -1,4 +1,5 @@
 import dash
+import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -52,6 +53,12 @@ app.layout = html.Div([
 
     html.Button('Search', id='search-button'),
     
+    dash_table.DataTable(
+        id = 'table',
+        columns = [{'name':'stuff', 'id':'stuff'}, {'name':'stuff2', 'id':'stuff2'}],
+        data = [{'stuff': 1, 'stuff2': 2}]
+    ),
+
     html.Div(id='my-div')
 ])
 
