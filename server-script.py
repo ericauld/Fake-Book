@@ -1,7 +1,7 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import psycopg2
 from pathlib import Path
 
@@ -31,7 +31,7 @@ app.layout = html.Div([
     html.Label('Find songs by mode'),
     dcc.Checklist(
         id='checkbox_input',
-        style = {'width': '200%'},
+#        style = {'width': '200%'},
         options=[
             {'label': 'Root', 'value': 0},
             {'label': '\u266D'+'II', 'value': 1},
@@ -50,7 +50,7 @@ app.layout = html.Div([
         labelStyle={'display': 'inline-block'}
     ),
 
-#    html.Button('Search', id='search-button')
+    html.Button('Search', id='search-button'),
     
     html.Div(id='my-div')
 ])
@@ -58,12 +58,13 @@ app.layout = html.Div([
 
 @app.callback(
     Output(component_id='my-div', component_property='children'),
+    [Input('search-button', 'n_clicks')],
     [
-        Input('checkbox_input', 'value'),
-        Input(component_id='my-id', component_property='value')
+        State('checkbox_input', 'value'),
+        State(component_id='my-id', component_property='value')
     ]
 )
-def update_output_div(checkbox_input, input_value):
+def update_output_div(n_clicks, checkbox_input, input_value):
     SQL = '''SELECT DISTINCT ver.SongVersionName as name, chordnot.NoteDegreeID as NoteID
                 FROM 
                     SongVersions ver
