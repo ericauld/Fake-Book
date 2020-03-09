@@ -55,7 +55,7 @@ app.layout = html.Div([
     
     dash_table.DataTable(
         id = 'table',
-        columns = [{'name':'name', 'id':'name'}, {'name':'noteid', 'id':'noteid'}],
+        columns = [{'name':'songversionname', 'id':'songversionname'}, {'name':'distance', 'id':'distance'}],
         data = [{'stuff': 1, 'stuff2': 2}]
     ),
 
@@ -71,18 +71,17 @@ app.layout = html.Div([
     ]
 )
 def update_output_div(n_clicks, checkbox_input):
-    SQL = '''SELECT DISTINCT ver.SongVersionName as name, chordnot.NoteDegreeID as NoteID
-                FROM 
-                    SongVersions ver
-                    INNER JOIN SongVersionChords verch
-                        ON ver.SongVersionID = verch.SongVersionID
-                    INNER JOIN ChordNoteDegrees chordnot
-                        ON 
-                            chordnot.RootDegreeID = verch.RootDegreeID
-                            AND chordnot.ChordTypeID = verch.ChordTypeID
-                WHERE ver.SongVersionName = 'Kiss Me'
-            ORDER BY chordnot.NoteDegreeID;
-    '''
+    SQL = '''SELECT ver.SongVersionName, pairs.distance
+                 FROM 
+                     SongVersionPairs pairs
+                     INNER JOIN SongVersions ver
+                         ON 
+                             ver.SongVersionID = pairs.SongVersionID2
+                             AND ver.SongVersionID != pairs.SongVersionID1
+                 WHERE pairs.SongVersionID1 = 1
+             ORDER BY pairs.distance
+             LIMIT 20;
+             '''
     cur = conn.cursor(cursor_factory = RealDictCursor)
     cur.execute(SQL)
 #    print(cur.fetchall())
