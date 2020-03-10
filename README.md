@@ -1,4 +1,6 @@
-# Songbook
+# Fake Book
+
+A "Fake Book" is the sheet music that a jazz musician takes to a gig, containing the essential information on hundreds of standard songs.
 
 There are twelve distinct notes on the piano, but most songs don't use them all. Just as each painting includes some colors and excludes others, each song has its own harmonic palette. My project makes use of relational databases to analyze songs by their harmonic palettes. 
 
