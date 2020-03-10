@@ -48,28 +48,6 @@ app.layout = html.Div([
         value=1
     ),
 
-#     dcc.Checklist(
-#         id='checkbox_input',
-# #        style = {'width': '200%'},
-#         options=[
-#             {'label': 'Root', 'value': 0},
-#             {'label': '\u266D'+'II', 'value': 1},
-#             {'label': 'II', 'value': 2},
-#             {'label': '\u266D'+'III', 'value': 3}, 
-#             {'label': 'III', 'value': 4},
-#             {'label': 'IV', 'value': 5},
-#             {'label': '\u266F'+'IV / ' + '\u266D' + 'V', 'value': 6},
-#             {'label': 'V', 'value': 7},
-#             {'label': '\u266F' + 'V / ' + '\u266D' + 'VI', 'value': 8},
-#             {'label': 'VI', 'value': 9},
-#             {'label': '\u266D' + 'VII', 'value': 10},
-#             {'label': 'VII', 'value': 11},
-#         ],
-#         value=[1, 3, 5, 6, 8, 10, 11],
-#         labelStyle={'display': 'inline-block'}
-#     ),
-    
-
     html.Button('Search', id='search-button'),
     
     dash_table.DataTable(
@@ -90,43 +68,33 @@ app.layout = html.Div([
     ]
 )
 def update_output_div(n_clicks, song_choice_id):
-    print(song_choice_id)
-    SQL = '''SELECT ver.SongVersionName, pairs.distance
-                 FROM 
-                     SongVersionPairs pairs
-                     INNER JOIN SongVersions ver
-                         ON 
-                             ver.SongVersionID = pairs.SongVersionID2
-                             AND ver.SongVersionID != pairs.SongVersionID1
-                 WHERE pairs.SongVersionID1 = %s
-             ORDER BY pairs.distance
-             LIMIT 20;
-             '''
+#    print(song_choice_id)
+    SQL = '''SELECT ver2.SongVersionName songversionname, pairs.distance distance
+                  FROM 
+                      SongVersionPairs pairs
+                      INNER JOIN SongVersions ver2
+                          ON ver2.SongVersionID = pairs.SongVersionID2
+                          AND pairs.SongVersionID1 != pairs.SongVersionID2
+                  WHERE
+                      pairs.SongVersionID1 = %s
+              UNION SELECT ver1.SongVersionName songversionname, pairs.distance distance
+                  FROM 
+                      SongVersionPairs pairs
+                      INNER JOIN SongVersions ver1
+                          ON ver1.SongVersionID = pairs.SongVersionID1
+                          AND pairs.SongVersionID1 != pairs.SongVersionID2
+                  WHERE 
+                      pairs.SongVersionID2 = %s
+              ORDER BY distance
+              LIMIT 20;'''
     cur = conn.cursor(cursor_factory = RealDictCursor)
     cur.execute(
             SQL,
-            (song_choice_id,)
+            (song_choice_id, song_choice_id)
     )
     p = cur.fetchall()
     print(p)
     return p
-#    print(p)
-#    SQL = '''SELECT ver.SongVersionName, pairs.distance
-#                 FROM
-#                     SongVersionPairs pairs
-#                     INNER JOIN SongVersions ver
-#                         ON
-#                             ver.SongVersionID = pairs.SongVersionID2
-#                             AND ver.SongVersionID != pairs.SongVersionID1
-#                 WHERE pairs.SongVersionID1 = 1
-#             ORDER BY pairs.distance
-#             LIMIT 20;
-#             '''
-#    cur = conn.cursor(cursor_factory = RealDictCursor)
-#    cur.execute(SQL)
-#    print(cur.fetchall())
-#   return cur.fetchall()
-#    return p
 
 if __name__ == '__main__':
     app.run_server(debug=True, host = '0.0.0.0')
