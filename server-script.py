@@ -44,7 +44,7 @@ app.layout = html.Div([
 
     dcc.Dropdown(
         id='song-choice',
-        options=[{'label': i[0], 'value': i[1] + " (" + i[2] ")" for i in song_list}],
+        options=[{'label': i[0], 'value': i[1] + " (" + i[2] + ")"} for i in song_list],
         value='Select Song'
     ),
 
@@ -85,11 +85,11 @@ app.layout = html.Div([
 @app.callback(
     Output(component_id='table', component_property='data'),
     [Input('search-button', 'n_clicks')],
-    [
-        State('checkbox_input', 'value'),
-    ]
+#    [
+#        State('checkbox_input', 'value'),
+#    ]
 )
-def update_output_div(n_clicks, checkbox_input):
+def update_output_div(n_clicks):
     SQL = '''SELECT ver.SongVersionName, pairs.distance
                  FROM 
                      SongVersionPairs pairs
