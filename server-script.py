@@ -89,7 +89,7 @@ app.layout = html.Div([
         State('song-choice', 'value'),
     ]
 )
-def update_output_div(n_clicks, song_choice):
+def update_output_div(n_clicks, song_choice_id):
     SQL = '''SELECT ver.SongVersionName, pairs.distance
                  FROM 
                      SongVersionPairs pairs
@@ -97,14 +97,18 @@ def update_output_div(n_clicks, song_choice):
                          ON 
                              ver.SongVersionID = pairs.SongVersionID2
                              AND ver.SongVersionID != pairs.SongVersionID1
-                 WHERE pairs.SongVersionID1 = 1
+                 WHERE pairs.SongVersionID1 = %s
              ORDER BY pairs.distance
              LIMIT 20;
              '''
     cur = conn.cursor(cursor_factory = RealDictCursor)
-    cur.execute(SQL)
-    print(song_choice)
-    return cur.fetchall()
+    cur.execute(
+            SQL,
+            (song_choice_id,)
+    )
+    p = cur.fetchall()
+    print(p)
+    return p
 
 if __name__ == '__main__':
     app.run_server(debug=True, host = '0.0.0.0')
