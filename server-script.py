@@ -45,7 +45,7 @@ app.layout = html.Div([
     dcc.Dropdown(
         id='song-choice',
         options=[{'label': i[1] + " (" + i[2] + ")", 'value': i[0]} for i in song_list],
-        value='Select Song'
+        value=1
     ),
 
 #     dcc.Checklist(
@@ -75,7 +75,7 @@ app.layout = html.Div([
     dash_table.DataTable(
         id = 'table',
         columns = [{'name':'songversionname', 'id':'songversionname'}, {'name':'distance', 'id':'distance'}],
-        data = [{'songversionname': 1, 'id': 2}]
+        data = [{'songversionname': 1, 'distance': 2}]
     ),
 
     html.Div(id='my-div')
@@ -109,21 +109,23 @@ def update_output_div(n_clicks, song_choice_id):
     )
     p = cur.fetchall()
     print(p)
-    SQL = '''SELECT ver.SongVersionName, pairs.distance
-                 FROM
-                     SongVersionPairs pairs
-                     INNER JOIN SongVersions ver
-                         ON
-                             ver.SongVersionID = pairs.SongVersionID2
-                             AND ver.SongVersionID != pairs.SongVersionID1
-                 WHERE pairs.SongVersionID1 = 1
-             ORDER BY pairs.distance
-             LIMIT 20;
-             '''
-    cur = conn.cursor(cursor_factory = RealDictCursor)
-    cur.execute(SQL)
+    return p
+#    print(p)
+#    SQL = '''SELECT ver.SongVersionName, pairs.distance
+#                 FROM
+#                     SongVersionPairs pairs
+#                     INNER JOIN SongVersions ver
+#                         ON
+#                             ver.SongVersionID = pairs.SongVersionID2
+#                             AND ver.SongVersionID != pairs.SongVersionID1
+#                 WHERE pairs.SongVersionID1 = 1
+#             ORDER BY pairs.distance
+#             LIMIT 20;
+#             '''
+#    cur = conn.cursor(cursor_factory = RealDictCursor)
+#    cur.execute(SQL)
 #    print(cur.fetchall())
-    return cur.fetchall()
+#   return cur.fetchall()
 #    return p
 
 if __name__ == '__main__':
