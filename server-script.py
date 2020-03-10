@@ -75,7 +75,7 @@ app.layout = html.Div([
     dash_table.DataTable(
         id = 'table',
         columns = [{'name':'songversionname', 'id':'songversionname'}, {'name':'distance', 'id':'distance'}],
-        data = [{'stuff': 1, 'stuff2': 2}]
+        data = [{'songversionname': 1, 'id': 2}]
     ),
 
     html.Div(id='my-div')
@@ -90,6 +90,7 @@ app.layout = html.Div([
     ]
 )
 def update_output_div(n_clicks, song_choice_id):
+    print(song_choice_id)
     SQL = '''SELECT ver.SongVersionName, pairs.distance
                  FROM 
                      SongVersionPairs pairs
@@ -108,7 +109,22 @@ def update_output_div(n_clicks, song_choice_id):
     )
     p = cur.fetchall()
     print(p)
-    return p
+    SQL = '''SELECT ver.SongVersionName, pairs.distance
+                 FROM
+                     SongVersionPairs pairs
+                     INNER JOIN SongVersions ver
+                         ON
+                             ver.SongVersionID = pairs.SongVersionID2
+                             AND ver.SongVersionID != pairs.SongVersionID1
+                 WHERE pairs.SongVersionID1 = 1
+             ORDER BY pairs.distance
+             LIMIT 20;
+             '''
+    cur = conn.cursor(cursor_factory = RealDictCursor)
+    cur.execute(SQL)
+#    print(cur.fetchall())
+    return cur.fetchall()
+#    return p
 
 if __name__ == '__main__':
     app.run_server(debug=True, host = '0.0.0.0')
