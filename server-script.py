@@ -44,7 +44,7 @@ app.layout = html.Div([
 
     dcc.Dropdown(
         id='song-choice',
-        options=[{'label': i[0], 'value': i[1] + " (" + i[2] + ")"} for i in song_list],
+        options=[{'label': i[1] + " (" + i[2] + ")", 'value': i[0]} for i in song_list],
         value='Select Song'
     ),
 
@@ -85,11 +85,11 @@ app.layout = html.Div([
 @app.callback(
     Output(component_id='table', component_property='data'),
     [Input('search-button', 'n_clicks')],
-#    [
-#        State('checkbox_input', 'value'),
-#    ]
+    [
+        State('song-choice', 'value'),
+    ]
 )
-def update_output_div(n_clicks):
+def update_output_div(n_clicks, song_choice):
     SQL = '''SELECT ver.SongVersionName, pairs.distance
                  FROM 
                      SongVersionPairs pairs
@@ -103,7 +103,7 @@ def update_output_div(n_clicks):
              '''
     cur = conn.cursor(cursor_factory = RealDictCursor)
     cur.execute(SQL)
-#    print(cur.fetchall())
+    print(song_choice)
     return cur.fetchall()
 
 if __name__ == '__main__':
