@@ -83,6 +83,28 @@ def main(MAX_N_TO_PROCESS = None):
             
             input_song_version_chords(conn, id_of_song_version, chords_for_input)
 
+
+# Returns ID_of_song, true if song was successfully input and -1,false if it was not (if it was already there)
+def input_song_version(conn, song_version_name, id_of_artist, id_of_key):
+    cur = conn.cursor()
+    SQL = '''INSERT INTO SongVersions(SongVersionName, ArtistID, RootAbsoluteNoteID)
+            SELECT %s, %s, %s
+                WHERE NOT EXISTS(
+                    SELECT 1 FROM SongVersions
+                    WHERE SongVersionName = %s
+                )
+            RETURNING SongVersionID;
+    '''
+    cur.execute(
+        SQL,
+        (song_version_name, id_of_artist, id_of_key, song_version_name)
+    )
+    fetch = cur.fetchone()
+    if not fetch:
+        return -1, False
+    return fetch[0], True
+
+
 #Input chords inserts items into both ChordsByDegree and ChordNoteDegrees (the composite table)
 def input_chords(conn, chords_for_input: List[Tuple[int]]) -> None:
     cur = conn.cursor()
@@ -147,13 +169,25 @@ def input_song_version_chords(conn, id_of_song_version, chords_for_input):
         root_degree_id = chord[0]
         chord_type_id = chord[1]
         SQL = '''INSERT INTO SongVersionChords(SongVersionID, RootDegreeID, ChordTypeID)
-                VALUES
-                    (%s, %s, %s);
+                SELECT %s, %s, %s
+                WHERE NOT EXISTS
+                    (SELECT 1 FROM SongVersionChords 
+                        WHERE SongVersionID = %s
+                        AND RootDegreeID = %s
+                        AND ChordTypeID = %s)
         '''
         cur.execute(
             SQL,
-            (id_of_song_version, root_degree_id, chord_type_id)
+            (
+                id_of_song_version, 
+                root_degree_id, 
+                chord_type_id,
+                id_of_song_version, 
+                root_degree_id, 
+                chord_type_id
+            )
         )
+
 
 def process_chords(conn, chords, song_key):
     cur = conn.cursor()
@@ -217,26 +251,6 @@ def input_artist(conn, artist_name):
         if not fetch2:
             raise Exception("The cursor was empty when it shouldn't have been.")
         return fetch2[0]
-
-# Returns ID_of_song, true if song was successfully input and -1,false if it was not (if it was already there)
-def input_song_version(conn, song_version_name, id_of_artist, id_of_key):
-    cur = conn.cursor()
-    SQL = '''INSERT INTO SongVersions(SongVersionName, ArtistID, RootAbsoluteNoteID)
-            SELECT %s, %s, %s
-                WHERE NOT EXISTS(
-                    SELECT 1 FROM SongVersions
-                    WHERE SongVersionName = %s
-                )
-            RETURNING SongVersionID;
-    '''
-    cur.execute(
-        SQL,
-        (song_version_name, id_of_artist, id_of_key, song_version_name)
-    )
-    fetch = cur.fetchone()
-    if not fetch:
-        return -1, False
-    return fetch[0], True
 
 # # We encode each absolute note as a number. This is also its AbsoluteNoteID in the Postgres database    
 def note_to_number(note_name):
