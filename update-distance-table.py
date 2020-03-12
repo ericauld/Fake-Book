@@ -2,7 +2,7 @@ import psycopg2
 from pathlib import Path
 
 def main():
-    project_folder = Path("/home/ubuntu/Songbook")
+    project_folder = Path("/home/ubuntu/Fake-Book")
     _key_file = project_folder / "key-file.txt"
 
     with _key_file.open() as key_file:
