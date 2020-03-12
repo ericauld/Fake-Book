@@ -8,9 +8,9 @@ import csv
 
 def main():
 
-    MAX_N_PAGES = 15
+    MAX_N_PAGES = 1500
     ATTRIBUTES_IN_OUTPUT = ['Song Version Name', 'Artist Name', 'Song Key', 'Chords', 'Key Is Guessed']
-    LINKS_DIRECTORY = "/home/ubuntu/Songbook/Links"
+    LINKS_DIRECTORY = "/home/ubuntu/Fake-Book/Links"
 
     alpha = string.ascii_lowercase    
     for ch in alpha:

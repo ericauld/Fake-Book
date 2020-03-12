@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 def main(MAX_N_TO_PROCESS = None):
 
-    project_folder = Path("/home/ubuntu/Songbook")
+    project_folder = Path("/home/ubuntu/Fake-Book")
     if not project_folder.exists():
         raise Exception('''
         The 'Songbook' directory wasn't where the process-data.py script expected it to be.\
