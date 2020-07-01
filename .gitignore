@@ -2,3 +2,4 @@ key-file.txt
 .DS_Store
 Links
 chords.csv
+__pycache__
