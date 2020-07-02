@@ -39,6 +39,7 @@ def create_database():
     conn.close()
     try: 
         conn = psycopg2.connect("dbname = 'fakebook_db' user='postgres' host='localhost' password = 'postgres'")
+        conn.set_isolation_level(0)
         cur = conn.cursor()
     except:
         print("Unable to connect to fakebook_db")
