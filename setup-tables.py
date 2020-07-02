@@ -46,7 +46,12 @@ def create_database():
 
 
 def create_tables(conn, cur):
-    
+    for query in create_table_queries:
+        try:
+            cur.execute(query)
+        except:
+            print("Unable to execute create table query")
+
 
 def mode_input(mode_name: str, mode_notes: list) -> None:
     pass
@@ -56,6 +61,7 @@ def mode_input(mode_name: str, mode_notes: list) -> None:
 
 def main():
     conn, cur = create_database()
+    create_tables(conn, cur)
        
 
 
