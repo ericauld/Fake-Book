@@ -53,6 +53,13 @@ def create_tables(conn, cur):
         except:
             print("Unable to execute create table query")
 
+def insert_rows(conn, cur):
+    for query in insert_table_queries:
+        try:
+            cur.execute(query)
+        except:
+            print("Unable to execute insert table query")
+
 
 def mode_input(mode_name: str, mode_notes: list) -> None:
     pass
