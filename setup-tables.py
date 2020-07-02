@@ -45,6 +45,9 @@ def create_database():
     return conn, cur
 
 
+def create_tables(conn, cur):
+    
+
 def mode_input(mode_name: str, mode_notes: list) -> None:
     pass
     # '''
