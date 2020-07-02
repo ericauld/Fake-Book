@@ -70,7 +70,7 @@ def mode_input(mode_name: str, mode_notes: list) -> None:
 def main():
     conn, cur = create_database()
     create_tables(conn, cur)
-       
+    insert_rows(conn, cur)      
 
 
 if __name__=='__main__':
