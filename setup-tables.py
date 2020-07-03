@@ -1,3 +1,10 @@
+'''
+This script uses psycopg2 to create the database for 
+FakeBook. It creates the appropriate schema and inputs certain
+necessary rows. It does so by first connecting to the default 
+database in Postgres, which is named 'postgres' and is assumed 
+'''
+
 import psycopg2
 from pathlib import Path
 from sql_queries import create_table_queries, insert_table_queries
@@ -5,26 +12,32 @@ from sql_queries import create_table_queries, insert_table_queries
 path_to_project = "/home/ubuntu/Fake-Book" #replace with your own path
 project_folder = Path(path_to_project)
 
-database_name = 'postgres' #replace these with your own name/user/host
+# Replace this with a name of an existing database you have. 
+# The default database which Postgres creates for you is named
+# 'postgres', and that is also the default user name and password.
+database_name = 'postgres' 
+
+# Replace this with your user name
 user = 'postgres'
+# Replace with your host if you like
 host = 'localhost'
 _key_file = project_folder / "key-file.txt"
 
-# Make sure there is a file called "key-file.txt" in your Fake-Book file,
-# whose first line is the password to your database.
+# Make sure there is a file called "key-file.txt" in your Fake-Book
+# file,
+# whose first line is the password for your user. 
 
 with _key_file.open() as key_file:
     input_list = key_file.readlines()
 
 password = input_list[0]
-
-
+password = password[:-1] # remove new line
 
 def create_database():
 
     # connect to default database
-    login_info = "dbname='postgres' user='postgres' host='localhost' password='postgres'"
-
+    login_info = "dbname='{}' user='{}' host='{}' password='{}'".format(database_name, user, host, password)     
+   
     try:
         conn = psycopg2.connect(login_info)
         conn.set_isolation_level(0)
@@ -37,8 +50,12 @@ def create_database():
     
     # close connection with the default database
     conn.close()
+
+    login_info = "dbname='fakebook_db' user='postgres' host='localhost' password='postgres'"
+
+
     try: 
-        conn = psycopg2.connect("dbname = 'fakebook_db' user='postgres' host='localhost' password = 'postgres'")
+        conn = psycopg2.connect(login_info)
         conn.set_isolation_level(0)
         cur = conn.cursor()
     except:
@@ -59,7 +76,6 @@ def insert_rows(conn, cur):
             cur.execute(query)
         except:
             print("Unable to execute insert table query")
-
 
 def mode_input(mode_name: str, mode_notes: list) -> None:
     pass
