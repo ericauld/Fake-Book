@@ -1,3 +1,5 @@
+This was a project for an Insight Data Engineering bootcamp. Read more about this and my other software projects at www.ericauld.net/software
+
 # Fake Book
 
 A "Fake Book" is the sheet music that a jazz musician takes to a performance, containing the essential information on hundreds of standard songs.
